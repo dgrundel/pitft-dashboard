@@ -23,5 +23,5 @@ var yMax = fb.size().height;
 fb.color(1, 1, 1); // Set the color to white
 
 fb.font(fontFamily, fontSize);
-// Draw the text non-centered, non-rotated, right
-fb.text(xMax-20, 20, ipAddrs.join(', '), false, 0);
+// Draw the text non-centered, non-rotated, left
+fb.text(0, 20, ipAddrs.join(', '), false, 0);
