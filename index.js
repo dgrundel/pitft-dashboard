@@ -26,6 +26,9 @@ const xMax = fb.size().width;
 const yMax = fb.size().height;
 
 const update = function() {
+    // Clear the screen buffer
+    fb.clear();
+
     fb.color(1, 1, 1); // Set the color to white
     fb.font(fontFamily, fontSize);
 
