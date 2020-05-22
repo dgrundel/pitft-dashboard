@@ -34,7 +34,7 @@ const update = function() {
 
     // Draw the text non-centered, non-rotated, left
     fb.text(0, 20, getIpAddresses().join(', '), false, 0);
-    fb.text(20, 20, getDateString(), false, 0);
+    fb.text(0, 60, getDateString(), false, 0);
 
     fb.blit(); // Transfer the back buffer to the screen buffer
 };
