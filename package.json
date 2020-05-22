@@ -10,6 +10,6 @@
   "license": "ISC",
   "private": true,
   "dependencies": {
-    "raylib": "^0.6.0"
+    "pitft": "0.0.17"
   }
 }
