@@ -1,6 +1,6 @@
-var pitft = require('pitft');
-var os = require('os');
-var ifaces = os.networkInterfaces();
+const pitft = require('pitft');
+const os = require('os');
+const ifaces = os.networkInterfaces();
 
 const fontFamily = 'noto';
 const fontSize = 16;
@@ -17,19 +17,18 @@ const getDateString = () => {
 }
 
 // Returns a framebuffer in double buffering mode
-var fb = pitft("/dev/fb1", true);
+const fb = pitft("/dev/fb1", true);
 
 // Clear the screen buffer
 fb.clear();
 
-var xMax = fb.size().width;
-var yMax = fb.size().height;
+const xMax = fb.size().width;
+const yMax = fb.size().height;
 
-fb.color(1, 1, 1); // Set the color to white
+const update = function() {
+    fb.color(1, 1, 1); // Set the color to white
+    fb.font(fontFamily, fontSize);
 
-fb.font(fontFamily, fontSize);
-
-var update = function() {
     // Draw the text non-centered, non-rotated, left
     fb.text(0, 20, getIpAddresses().join(', '), false, 0);
     fb.text(20, 20, getDateString(), false, 0);
