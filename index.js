@@ -3,6 +3,7 @@ const os = require('os');
 const osu = require('node-os-utils');
 const humanSize = require('human-size');
 const prettyMs = require('pretty-ms');
+
 const ifaces = os.networkInterfaces();
 
 // Returns a framebuffer in double buffering mode
@@ -16,6 +17,14 @@ const height = fb.size().height; // 240
 const fontFamily = 'roboto';
 const defaultFontSize = 18;
 const defaultLineHeight = 22;
+const colors = {
+    blue: '0779e4',
+    gold: 'f5a31a',
+    green: '79d70f',
+    lightGray: 'edf4f2',
+    purple: 'be79df',
+    red: 'd32626'
+};
 
 const hexToRgb = (hexStr) => [
     parseInt(hexStr.substring(0, 2), 16) / 255,
@@ -67,9 +76,8 @@ const getDiskUsageStr = (info) => osu.isNotSupported(info)
     ? 'Unsupported'
     : `${info.freeGb}GB Free, ${info.usedPercentage}% Used`;
 
-const getLineGeometry = (fontSizeOverride) => {
-    const fontSize = fontSizeOverride || defaultFontSize;
-    const lineHeight = defaultLineHeight;
+const getLineGeometry = (fontSize = defaultFontSize) => {
+    const lineHeight = Math.max(fontSize, defaultLineHeight);
     const padding = (lineHeight - fontSize) / 2;
 
     return {
@@ -84,13 +92,13 @@ const updateDisplay = () => {
         // vertical cursor
         let y = 0;
 
-        const addTextLine = (s, sizeOverride) => {
+        const addTextLine = (s, sizeOverride = undefined, textColor = colors.purple) => {
             const { fontSize, lineHeight, padding } = getLineGeometry(sizeOverride);
 
             // place baseline of text with padding
             const baseline = y + lineHeight - padding;
             
-            fb.color(...hexToRgb('f5a31a'));
+            fb.color(...hexToRgb(textColor));
             fb.font(fontFamily, fontSize);
             fb.text(0, baseline, s, false, 0);
             
@@ -100,13 +108,19 @@ const updateDisplay = () => {
 
         const addGraph = (pct) => {
             const { fontSize, lineHeight, padding } = getLineGeometry();
+            let barColor = colors.green;
+            if (pct > .8) {
+                barColor = colors.red;
+            } else if (pct > .6) {
+                barColor = colors.gold;
+            }
 
             // draw a rectangle the full width of the screen and full line height
-            fb.color(...hexToRgb('edf4f2'));
+            fb.color(...hexToRgb(colors.lightGray));
             fb.rect(0, y, width, lineHeight);
 
             // draw the bar at the height of the text and pad all four sides
-            fb.color(...hexToRgb('79d70f'));
+            fb.color(...hexToRgb(barColor));
             fb.rect(padding, y + padding, Math.ceil(pct * (width - padding)), fontSize);
 
             // increment our y cursor
@@ -117,8 +131,8 @@ const updateDisplay = () => {
         fb.clear();
 
         // Draw the text non-centered, non-rotated, left (omitted arg)
-        addTextLine(getDateString(), 24);
-        addTextLine(`IP: ${getIpAddresses().join(', ')}`);
+        addTextLine(getDateString(), 24, colors.blue);
+        addTextLine(`IP: ${getIpAddresses().join(', ')}`, undefined, colors.green);
         addTextLine(`Uptime: ${getUptimeString()}`);
         addTextLine(`Load: ${getLoadString()}`);
         
