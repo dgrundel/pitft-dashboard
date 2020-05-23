@@ -19,10 +19,12 @@ const defaultFontSize = 18;
 const defaultLineHeight = 22;
 const colors = {
     blue: '0779e4',
+    darkGray: '888888',
+    darkGreen: '06623b',
     gold: 'f5a31a',
     green: '79d70f',
     lightGray: 'edf4f2',
-    purple: 'be79df',
+    purple: '4d089a',
     red: 'd32626'
 };
 
@@ -92,7 +94,7 @@ const updateDisplay = () => {
         // vertical cursor
         let y = 0;
 
-        const addTextLine = (s, sizeOverride = undefined, textColor = colors.purple) => {
+        const addTextLine = (s, sizeOverride = undefined, textColor = colors.lightGray) => {
             const { fontSize, lineHeight, padding } = getLineGeometry(sizeOverride);
 
             // place baseline of text with padding
@@ -116,7 +118,7 @@ const updateDisplay = () => {
             }
 
             // draw a rectangle the full width of the screen and full line height
-            fb.color(...hexToRgb(colors.lightGray));
+            fb.color(...hexToRgb(colors.darkGray));
             fb.rect(0, y, width, lineHeight);
 
             // draw the bar at the height of the text and pad all four sides
