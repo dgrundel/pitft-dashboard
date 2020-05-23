@@ -90,7 +90,7 @@ const updateDisplay = () => {
             // place baseline of text with padding
             const baseline = y + lineHeight - padding;
             
-            fb.color(...hexToRgb('ffbd69'));
+            fb.color(...hexToRgb('f5a31a'));
             fb.font(fontFamily, fontSize);
             fb.text(0, baseline, s, false, 0);
             
@@ -102,11 +102,11 @@ const updateDisplay = () => {
             const { fontSize, lineHeight, padding } = getLineGeometry();
 
             // draw a rectangle the full width of the screen and full line height
-            fb.color(...hexToRgb('e5e5e5'));
+            fb.color(...hexToRgb('edf4f2'));
             fb.rect(0, y, width, lineHeight);
 
             // draw the bar at the height of the text and pad all four sides
-            fb.color(...hexToRgb('2fc4b2'));
+            fb.color(...hexToRgb('79d70f'));
             fb.rect(padding, y + padding, Math.ceil(pct * (width - padding)), fontSize);
 
             // increment our y cursor
