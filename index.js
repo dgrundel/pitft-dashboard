@@ -182,15 +182,16 @@ const updateDisplay = () => {
         
         Promise.all([22, 23].map(n => new Promise((resolve) => {
             if (!gpioReady) {
-                resolve();
+                resolve('NR');
                 return;
             }
             
             gpio.read(n, function(err, value) {
-                addTextLine(`${n}: ${err ? err.message : value}`, 8, err ? colors.red : colors.green);
-                resolve();
+                resolve(`${n}: ${err ? err.message : value}`);
             });
-        }))).then(() => {
+        }))).then((values) => {
+            addTextLine(values.join('; '), 8, colors.gold);
+            
             // Transfer the back buffer to the screen buffer
             setTimeout(() => fb.blit(), 20);
             
