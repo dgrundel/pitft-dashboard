@@ -32,9 +32,10 @@ const update = function() {
     fb.color(1, 1, 1); // Set the color to white
     fb.font(fontFamily, fontSize);
 
-    // Draw the text non-centered, non-rotated, left
+    // Draw the text non-centered, non-rotated, left (omitted arg)
     fb.text(0, 20, 'IP: ' + getIpAddresses().join(', '), false, 0);
     fb.text(0, 45, 'Date: ' + getDateString(), false, 0);
+    fb.text(0, 70, 'Uptime: ' + os.uptime(), false, 0);
 
     fb.blit(); // Transfer the back buffer to the screen buffer
 };
