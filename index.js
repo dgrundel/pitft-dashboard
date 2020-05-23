@@ -5,9 +5,6 @@ const humanSize = require('human-size');
 const prettyMs = require('pretty-ms');
 const ifaces = os.networkInterfaces();
 
-const fontFamily = 'robot';
-const fontSize = 16;
-
 const getIpAddresses = () => Object.keys(ifaces).reduce((ips, ifname) => {
     return ips.concat(ifaces[ifname]
         .filter(iface => iface.family === 'IPv4' && iface.internal === false)
@@ -21,7 +18,7 @@ const getDateString = () => {
     const hour = now.getHours();
     const date = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
     const ampm = hour > 12 ? 'pm' : 'am';
-    const time = `${hour % 12}:${pad(now.getMinutes())}:${now.getSeconds()} ${ampm}`;
+    const time = `${hour % 12}:${pad(now.getMinutes())}:${pad(now.getSeconds())} ${ampm}`;
     return `${date} ${time}`;
 };
 
@@ -52,6 +49,8 @@ fb.clear();
 
 const width = fb.size().width;
 const height = fb.size().height;
+const fontFamily = 'robot';
+const fontSize = 16;
 
 const updateDisplay = function() {
     osu.drive.info().then(diskInfo => {
@@ -72,9 +71,9 @@ const updateDisplay = function() {
 
         
         fb.color(1, 1, 1);
-        fb.rect(0, 168, width, 24, true, 2); // Draw an outlined rectangle with a 1 pixel wide border
+        fb.rect(0, 168, width, 24);
         fb.color(0, 1, 0);
-        fb.rect(0, 170, Math.ceil((parseFloat(diskInfo.usedPercentage) / 100) * width), 20); // Draw a filled rectangle
+        fb.rect(0, 170, Math.ceil((parseFloat(diskInfo.usedPercentage) / 100) * width), 20);
         
         
         // Transfer the back buffer to the screen buffer
