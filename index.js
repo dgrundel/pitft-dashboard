@@ -1,10 +1,17 @@
 const pitft = require('pitft');
+const gpio = require('rpi-gpio');
+
 const os = require('os');
 const osu = require('node-os-utils');
+
 const humanSize = require('human-size');
 const prettyMs = require('pretty-ms');
 
-const ifaces = os.networkInterfaces();
+gpio.setMode(gpio.MODE_BCM);
+gpio.setup(18, gpio.DIR_HIGH, (err) => {
+    if (err) throw err;
+    // gpio.write(18, false, (err) => { if (err) throw err; });
+});
 
 // Returns a framebuffer in double buffering mode
 const fb = pitft("/dev/fb1", true);
@@ -36,11 +43,13 @@ const hexToRgb = (hexStr) => [
 
 const pad = (n) => (n < 10 ? '0' : '') + n;
 
-const getIpAddresses = () => Object.keys(ifaces).reduce((ips, ifname) => {
-    return ips.concat(ifaces[ifname]
-        .filter(iface => iface.family === 'IPv4' && iface.internal === false)
-        .map(iface => iface.address));
-}, []);
+const getIpAddresses = () => Object.values(os.networkInterfaces())
+    .reduce((ips, ifaces) => ips.concat(
+            ifaces.filter(iface => iface.family === 'IPv4' && iface.internal === false)
+                .map(iface => iface.address)
+        ),
+        []
+    );
 
 const getDateString = () => {
     const now = new Date();
