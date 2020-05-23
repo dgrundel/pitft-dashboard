@@ -1,10 +1,11 @@
 const pitft = require('pitft');
 const os = require('os');
+const osu = require('node-os-utils');
 const humanSize = require('human-size');
 const prettyMs = require('pretty-ms');
 const ifaces = os.networkInterfaces();
 
-const fontFamily = 'noto';
+const fontFamily = 'robot';
 const fontSize = 16;
 
 const getIpAddresses = () => Object.keys(ifaces).reduce((ips, ifname) => {
@@ -43,27 +44,39 @@ const fb = pitft("/dev/fb1", true);
 // Clear the screen buffer
 fb.clear();
 
-const xMax = fb.size().width;
-const yMax = fb.size().height;
+// const xMax = fb.size().width;
+// const yMax = fb.size().height;
 
-const update = function() {
+const updateDisplay = function() {
     // Clear the screen buffer
     fb.clear();
 
-    fb.color(1, 1, 1); // Set the color to white
+    // Set the foreground color to white
+    fb.color(1, 1, 1); 
     fb.font(fontFamily, fontSize);
 
     // Draw the text non-centered, non-rotated, left (omitted arg)
-    fb.text(0, 20, 'IP: ' + getIpAddresses().join(', '), false, 0);
-    fb.text(0, 45, 'Date: ' + getDateString(), false, 0);
-    fb.text(0, 70, 'Uptime: ' + getUptimeString(), false, 0);
-    fb.text(0, 95, 'Load: ' + getLoadString(), false, 0);
-    fb.text(0, 120, 'Memory: ' + getMemoryUsageString(), false, 0);
+    fb.text(0, 20, `IP: ${getIpAddresses().join(', ')}`, false, 0);
+    fb.text(0, 45, `Date: ${getDateString()}`, false, 0);
+    fb.text(0, 70, `Uptime: ${getUptimeString()}`, false, 0);
+    fb.text(0, 95, `Load: ${getLoadString()}`, false, 0);
+    fb.text(0, 120, `Memory: ${getMemoryUsageString()}`, false, 0);
 
-    fb.blit(); // Transfer the back buffer to the screen buffer
+    osu.drive.free().then(info => {
+        const usageStr = osu.isNotSupported(info)
+            ? 'Unsupported'
+            : `${info.freeGb}GB Free, ${info.freePercentage} % Used`;
+
+        fb.text(0, 145, `Disk: ${usageStr}`, false, 0);
+
+    }).then(() => {
+        // Transfer the back buffer to the screen buffer
+        fb.blit(); 
+        
+        // trigger another update
+        setTimeout(updateDisplay, 100);
+    })
+
 };
 
-setInterval(function() {
-    update();
-}, 100);
-
+updateDisplay();
