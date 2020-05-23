@@ -149,7 +149,7 @@ const updateDisplay = () => {
         
         addTextLine(getIpAddresses().join(', '), 24, colors.green);
         
-        addDivider(1, 4);
+        addDivider(1, 10, colors.lightGray);
 
         addTextLine(`Load: ${getLoadString()}`);
         // 1 minute load avg
