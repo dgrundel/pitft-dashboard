@@ -13,7 +13,12 @@ gpio.setMode(gpio.MODE_BCM);
 //     // gpio.write(18, false, (err) => { if (err) throw err; });
 // });
 
-[22, 23].forEach(n => gpio.setup(n, gpio.DIR_IN, (err) => { if (err) throw err; }));
+
+const gpioReady = Promise.all([22, 23].map(n => {
+    return new Promise((resolve, reject) => {
+        gpio.setup(n, gpio.DIR_IN, (err) => err ? reject(err) : resolve())
+    });
+}));
 
 // Returns a framebuffer in double buffering mode
 const fb = pitft("/dev/fb1", true);
@@ -172,18 +177,20 @@ const updateDisplay = () => {
         addTextLine(`Disk: ${getDiskUsageStr(diskInfo)}`);
         addGraph(parseFloat(diskInfo.usedPercentage) / 100);
         
-        [22, 23].forEach(n => {
-            gpio.read(n, function(err, value) {
-                addTextLine(`${n}: ${err ? err.message : value}`, 12, err ? colors.red : colors.green);
+        gpioReady.then(() => {
+            [22, 23].forEach(n => {
+                gpio.read(n, function(err, value) {
+                    addTextLine(`${n}: ${err ? err.message : value}`, 12, err ? colors.red : colors.green);
+                });
             });
+
+
+            // Transfer the back buffer to the screen buffer
+            setTimeout(() => fb.blit(), 20);
+            
+            // trigger another update
+            setTimeout(updateDisplay, 120);
         });
-
-
-        // Transfer the back buffer to the screen buffer
-        setTimeout(() => fb.blit(), 20);
-        
-        // trigger another update
-        setTimeout(updateDisplay, 120);
     });
 };
 
