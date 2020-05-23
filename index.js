@@ -37,6 +37,14 @@ const getMemoryUsageString = () => {
     return `${humanSize(used, 2)} / ${humanSize(total, 2)}`;
 };
 
+const getMemoryUsagePercent = () => {
+    const free = os.freemem(); // bytes
+    const total = os.totalmem(); // bytes
+    const used = total - free; // bytes
+
+    return used/total;
+};
+
 const getDiskUsageStr = (info) => osu.isNotSupported(info)
     ? 'Unsupported'
     : `${info.freeGb}GB Free, ${info.usedPercentage}% Used`;
@@ -47,13 +55,42 @@ const fb = pitft("/dev/fb1", true);
 // Clear the screen buffer
 fb.clear();
 
-const width = fb.size().width;
-const height = fb.size().height;
+const width = fb.size().width; // 320
+const height = fb.size().height; // 240
 const fontFamily = 'robot';
 const fontSize = 16;
+const lineHeight = 20;
+const padding = (lineHeight - fontSize) / 2;
 
-const updateDisplay = function() {
+const updateDisplay = () => {
     osu.drive.info().then(diskInfo => {
+        // vertical cursor
+        let y = 0;
+
+        const addTextLine = (s) => {
+            // place baseline of text with padding
+            const baseline = y + lineHeight - padding;
+            
+            fb.color(1, 1, 1);
+            fb.text(0, baseline, s, false, 0);
+            
+            // increment our y cursor
+            y += lineHeight;
+        };
+
+        const addGraph = (pct) => {
+            // draw a rectangle the full width of the screen and full line height
+            fb.color(1, 1, 1);
+            fb.rect(0, y, width, lineHeight);
+
+            // draw the bar at the height of the text and pad all four sides
+            fb.color(0, 1, 0);
+            fb.rect(padding, y + padding, Math.ceil(pct * (width - padding)), fontSize);
+
+            // increment our y cursor
+            y += lineHeight;
+        }
+
         // Clear the screen buffer
         fb.clear();
 
@@ -62,19 +99,16 @@ const updateDisplay = function() {
         fb.font(fontFamily, fontSize);
 
         // Draw the text non-centered, non-rotated, left (omitted arg)
-        fb.text(0, 20, `IP: ${getIpAddresses().join(', ')}`, false, 0);
-        fb.text(0, 45, `Date: ${getDateString()}`, false, 0);
-        fb.text(0, 70, `Uptime: ${getUptimeString()}`, false, 0);
-        fb.text(0, 95, `Load: ${getLoadString()}`, false, 0);
-        fb.text(0, 120, `Memory: ${getMemoryUsageString()}`, false, 0);
-        fb.text(0, 145, `Disk: ${getDiskUsageStr(diskInfo)}`, false, 0);
+        addTextLine(`IP: ${getIpAddresses().join(', ')}`);
+        addTextLine(`Date: ${getDateString()}`);
+        addTextLine(`Uptime: ${getUptimeString()}`);
+        addTextLine(`Load: ${getLoadString()}`);
+        
+        addTextLine(`Memory: ${getMemoryUsageString()}`);
+        addGraph(getMemoryUsagePercent());
 
-        
-        fb.color(1, 1, 1);
-        fb.rect(0, 168, width, 24);
-        fb.color(0, 1, 0);
-        fb.rect(0, 170, Math.ceil((parseFloat(diskInfo.usedPercentage) / 100) * width), 20);
-        
+        addTextLine(`Disk: ${getDiskUsageStr(diskInfo)}`);
+        addGraph(parseFloat(diskInfo.usedPercentage) / 100);
         
         // Transfer the back buffer to the screen buffer
         fb.blit(); 
