@@ -33,8 +33,8 @@ const update = function() {
     fb.font(fontFamily, fontSize);
 
     // Draw the text non-centered, non-rotated, left
-    fb.text(0, 20, getIpAddresses().join(', '), false, 0);
-    fb.text(0, 60, getDateString(), false, 0);
+    fb.text(0, 20, 'IP: ' + getIpAddresses().join(', '), false, 0);
+    fb.text(0, 45, 'Date: ' + getDateString(), false, 0);
 
     fb.blit(); // Transfer the back buffer to the screen buffer
 };
