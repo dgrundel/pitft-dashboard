@@ -21,7 +21,7 @@ const getDateString = () => {
     const hour = now.getHours();
     const date = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
     const ampm = hour > 12 ? 'pm' : 'am';
-    const time = `${hour % 12}:${pag(now.getMinutes())}:${now.getSeconds()} ${ampm}`;
+    const time = `${hour % 12}:${pad(now.getMinutes())}:${now.getSeconds()} ${ampm}`;
     return `${date} ${time}`;
 };
 
