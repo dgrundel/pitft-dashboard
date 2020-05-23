@@ -1,6 +1,7 @@
 const pitft = require('pitft');
 const os = require('os');
 const humanSize = require('human-size');
+const prettyMs = require('pretty-ms');
 const ifaces = os.networkInterfaces();
 
 const fontFamily = 'noto';
@@ -21,11 +22,14 @@ const getDateString = () => {
     return `${date} ${time}`;
 };
 
-const getLoadStr = () => os.loadavg()
+// uptime is in seconds, prettyMilliseconds uses millis
+const getUptimeString = () => prettyMs(os.uptime() * 1000);
+
+const getLoadString = () => os.loadavg()
     .map(i => i.toFixed(2))
     .join(', ');
 
-const getMemoryUsageStr = () => {
+const getMemoryUsageString = () => {
     const free = os.freemem(); // bytes
     const total = os.totalmem(); // bytes
     const used = total - free; // bytes
@@ -52,9 +56,9 @@ const update = function() {
     // Draw the text non-centered, non-rotated, left (omitted arg)
     fb.text(0, 20, 'IP: ' + getIpAddresses().join(', '), false, 0);
     fb.text(0, 45, 'Date: ' + getDateString(), false, 0);
-    fb.text(0, 70, 'Uptime: ' + os.uptime(), false, 0);
-    fb.text(0, 95, 'Load: ' + getLoadStr(), false, 0);
-    fb.text(0, 120, 'Memory: ' + getMemoryUsageStr(), false, 0);
+    fb.text(0, 70, 'Uptime: ' + getUptimeString(), false, 0);
+    fb.text(0, 95, 'Load: ' + getLoadString(), false, 0);
+    fb.text(0, 120, 'Memory: ' + getMemoryUsageString(), false, 0);
 
     fb.blit(); // Transfer the back buffer to the screen buffer
 };
@@ -62,3 +66,4 @@ const update = function() {
 setInterval(function() {
     update();
 }, 100);
+
