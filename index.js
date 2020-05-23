@@ -8,10 +8,12 @@ const humanSize = require('human-size');
 const prettyMs = require('pretty-ms');
 
 gpio.setMode(gpio.MODE_BCM);
-gpio.setup(18, gpio.DIR_HIGH, (err) => {
-    if (err) throw err;
-    // gpio.write(18, false, (err) => { if (err) throw err; });
-});
+// gpio.setup(18, gpio.DIR_HIGH, (err) => {
+//     if (err) throw err;
+//     // gpio.write(18, false, (err) => { if (err) throw err; });
+// });
+
+[22, 23].forEach(n => gpio.setup(n, gpio.DIR_IN, (err) => { if (err) throw err; }));
 
 // Returns a framebuffer in double buffering mode
 const fb = pitft("/dev/fb1", true);
@@ -170,6 +172,13 @@ const updateDisplay = () => {
         addTextLine(`Disk: ${getDiskUsageStr(diskInfo)}`);
         addGraph(parseFloat(diskInfo.usedPercentage) / 100);
         
+        [22, 23].forEach(n => {
+            gpio.read(n, function(err, value) {
+                addTextLine(`${n}: ${err ? err.message : value}`, 12, err ? colors.red : colors.green);
+            });
+        });
+
+
         // Transfer the back buffer to the screen buffer
         setTimeout(() => fb.blit(), 20);
         
