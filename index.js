@@ -57,21 +57,35 @@ fb.clear();
 
 const width = fb.size().width; // 320
 const height = fb.size().height; // 240
-const fontFamily = 'robot';
-const fontSize = 18;
-const lineHeight = 22;
-const padding = (lineHeight - fontSize) / 2;
+const fontFamily = 'roboto';
+const defaultFontSize = 18;
+const defaultLineHeight = 22;
+
+const getLineGeometry = (fontSizeOverride) => {
+    const fontSize = fontSizeOverride || defaultFontSize;
+    const lineHeight = defaultLineHeight;
+    const padding = (lineHeight - fontSize) / 2;
+
+    return {
+        fontSize,
+        lineHeight,
+        padding
+    };
+};
 
 const updateDisplay = () => {
     osu.drive.info().then(diskInfo => {
         // vertical cursor
         let y = 0;
 
-        const addTextLine = (s) => {
+        const addTextLine = (s, sizeOverride) => {
+            const { fontSize, lineHeight, padding } = getLineGeometry(sizeOverride);
+
             // place baseline of text with padding
             const baseline = y + lineHeight - padding;
             
             fb.color(1, 1, 1);
+            fb.font(fontFamily, fontSize);
             fb.text(0, baseline, s, false, 0);
             
             // increment our y cursor
@@ -79,6 +93,8 @@ const updateDisplay = () => {
         };
 
         const addGraph = (pct) => {
+            const { fontSize, lineHeight, padding } = getLineGeometry();
+
             // draw a rectangle the full width of the screen and full line height
             fb.color(1, 1, 1);
             fb.rect(0, y, width, lineHeight);
@@ -94,12 +110,8 @@ const updateDisplay = () => {
         // Clear the screen buffer
         fb.clear();
 
-        // Set the foreground color to white
-        fb.color(1, 1, 1); 
-        fb.font(fontFamily, fontSize);
-
         // Draw the text non-centered, non-rotated, left (omitted arg)
-        addTextLine(`Date: ${getDateString()}`);
+        addTextLine(getDateString(), 24);
         addTextLine(`IP: ${getIpAddresses().join(', ')}`);
         addTextLine(`Uptime: ${getUptimeString()}`);
         addTextLine(`Load: ${getLoadString()}`);
@@ -111,10 +123,10 @@ const updateDisplay = () => {
         addGraph(parseFloat(diskInfo.usedPercentage) / 100);
         
         // Transfer the back buffer to the screen buffer
-        fb.blit(); 
+        setTimeout(() => fb.blit(), 20);
         
         // trigger another update
-        setTimeout(updateDisplay, 100);
+        setTimeout(updateDisplay, 120);
     });
 };
 
