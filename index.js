@@ -71,10 +71,10 @@ const updateDisplay = function() {
         fb.text(0, 145, `Disk: ${getDiskUsageStr(diskInfo)}`, false, 0);
 
         
-        // fb.color(1, 1, 1);
-        // fb.rect(0, 168, width, 24, true, 1); // Draw an outlined rectangle with a 1 pixel wide border
+        fb.color(1, 1, 1);
+        fb.rect(0, 168, width, 24, true, 2); // Draw an outlined rectangle with a 1 pixel wide border
         fb.color(0, 1, 0);
-        fb.rect(0, 170, 100, 20); // Draw a filled rectangle
+        fb.rect(0, 170, Math.ceil((parseFloat(diskInfo.usedPercentage) / 100) * width), 20); // Draw a filled rectangle
         
         
         // Transfer the back buffer to the screen buffer
