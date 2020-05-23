@@ -5,13 +5,31 @@ const humanSize = require('human-size');
 const prettyMs = require('pretty-ms');
 const ifaces = os.networkInterfaces();
 
+// Returns a framebuffer in double buffering mode
+const fb = pitft("/dev/fb1", true);
+
+// Clear the screen buffer
+fb.clear();
+
+const width = fb.size().width; // 320
+const height = fb.size().height; // 240
+const fontFamily = 'roboto';
+const defaultFontSize = 18;
+const defaultLineHeight = 22;
+
+const hexToRgb = (hexStr) => [
+    parseInt(hexStr.substring(0, 2), 16) / 255,
+    parseInt(hexStr.substring(2, 4), 16) / 255,
+    parseInt(hexStr.substring(4), 16) / 255
+];
+
+const pad = (n) => (n < 10 ? '0' : '') + n;
+
 const getIpAddresses = () => Object.keys(ifaces).reduce((ips, ifname) => {
     return ips.concat(ifaces[ifname]
         .filter(iface => iface.family === 'IPv4' && iface.internal === false)
         .map(iface => iface.address));
 }, []);
-
-const pad = (n) => (n < 10 ? '0' : '') + n;
 
 const getDateString = () => {
     const now = new Date();
@@ -49,18 +67,6 @@ const getDiskUsageStr = (info) => osu.isNotSupported(info)
     ? 'Unsupported'
     : `${info.freeGb}GB Free, ${info.usedPercentage}% Used`;
 
-// Returns a framebuffer in double buffering mode
-const fb = pitft("/dev/fb1", true);
-
-// Clear the screen buffer
-fb.clear();
-
-const width = fb.size().width; // 320
-const height = fb.size().height; // 240
-const fontFamily = 'roboto';
-const defaultFontSize = 18;
-const defaultLineHeight = 22;
-
 const getLineGeometry = (fontSizeOverride) => {
     const fontSize = fontSizeOverride || defaultFontSize;
     const lineHeight = defaultLineHeight;
@@ -84,7 +90,7 @@ const updateDisplay = () => {
             // place baseline of text with padding
             const baseline = y + lineHeight - padding;
             
-            fb.color(1, 1, 1);
+            fb.color(...hexToRgb('ffbd69'));
             fb.font(fontFamily, fontSize);
             fb.text(0, baseline, s, false, 0);
             
@@ -96,11 +102,11 @@ const updateDisplay = () => {
             const { fontSize, lineHeight, padding } = getLineGeometry();
 
             // draw a rectangle the full width of the screen and full line height
-            fb.color(1, 1, 1);
+            fb.color(...hexToRgb('e5e5e5'));
             fb.rect(0, y, width, lineHeight);
 
             // draw the bar at the height of the text and pad all four sides
-            fb.color(0, 1, 0);
+            fb.color(...hexToRgb('2fc4b2'));
             fb.rect(padding, y + padding, Math.ceil(pct * (width - padding)), fontSize);
 
             // increment our y cursor
