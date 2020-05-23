@@ -1,5 +1,6 @@
 const pitft = require('pitft');
 const os = require('os');
+const humanSize = require('human-size');
 const ifaces = os.networkInterfaces();
 
 const fontFamily = 'noto';
@@ -14,7 +15,15 @@ const getIpAddresses = () => Object.keys(ifaces).reduce((ips, ifname) => {
 const getDateString = () => {
     const now = new Date();
     return now.toISOString();
-}
+};
+
+const getMemoryUsageStr = () => {
+    const free = os.freemem(); // bytes
+    const total = os.totalmem(); // bytes
+    const used = total - free; // bytes
+
+    return `${humanSize(used, 2)} Used (${humanSize(used/total, 2)}%)`;
+};
 
 // Returns a framebuffer in double buffering mode
 const fb = pitft("/dev/fb1", true);
@@ -36,6 +45,8 @@ const update = function() {
     fb.text(0, 20, 'IP: ' + getIpAddresses().join(', '), false, 0);
     fb.text(0, 45, 'Date: ' + getDateString(), false, 0);
     fb.text(0, 70, 'Uptime: ' + os.uptime(), false, 0);
+    fb.text(0, 95, 'Load: ' + os.loadavg().join(' '), false, 0);
+    fb.text(0, 120, 'Memory: ' + getMemoryUsageStr(), false, 0);
 
     fb.blit(); // Transfer the back buffer to the screen buffer
 };
