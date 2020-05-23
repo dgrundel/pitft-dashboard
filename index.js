@@ -58,8 +58,8 @@ fb.clear();
 const width = fb.size().width; // 320
 const height = fb.size().height; // 240
 const fontFamily = 'robot';
-const fontSize = 16;
-const lineHeight = 20;
+const fontSize = 18;
+const lineHeight = 22;
 const padding = (lineHeight - fontSize) / 2;
 
 const updateDisplay = () => {
@@ -99,8 +99,8 @@ const updateDisplay = () => {
         fb.font(fontFamily, fontSize);
 
         // Draw the text non-centered, non-rotated, left (omitted arg)
-        addTextLine(`IP: ${getIpAddresses().join(', ')}`);
         addTextLine(`Date: ${getDateString()}`);
+        addTextLine(`IP: ${getIpAddresses().join(', ')}`);
         addTextLine(`Uptime: ${getUptimeString()}`);
         addTextLine(`Load: ${getLoadString()}`);
         
