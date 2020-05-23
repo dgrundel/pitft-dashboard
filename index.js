@@ -18,7 +18,7 @@ const fontFamily = 'roboto';
 const defaultFontSize = 18;
 const defaultLineHeight = 22;
 const colors = {
-    blue: '0779e4',
+    blue: '035aa6',
     darkGray: '888888',
     darkGreen: '06623b',
     gold: 'f5a31a',
@@ -118,7 +118,7 @@ const updateDisplay = () => {
             }
 
             // draw a rectangle the full width of the screen and full line height
-            fb.color(...hexToRgb(colors.darkGray));
+            fb.color(...hexToRgb(colors.lightGray));
             fb.rect(0, y, width, lineHeight);
 
             // draw the bar at the height of the text and pad all four sides
@@ -134,8 +134,8 @@ const updateDisplay = () => {
 
         // Draw the text non-centered, non-rotated, left (omitted arg)
         addTextLine(getDateString(), 24, colors.blue);
-        addTextLine(`IP: ${getIpAddresses().join(', ')}`, undefined, colors.green);
-        addTextLine(`Uptime: ${getUptimeString()}`);
+        addTextLine(`Uptime: ${getUptimeString()}`, 14, colors.darkGray);
+        addTextLine(getIpAddresses().join(', '), 28, colors.green);
         addTextLine(`Load: ${getLoadString()}`);
         
         addTextLine(`Memory: ${getMemoryUsageString()}`);
