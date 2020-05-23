@@ -40,6 +40,10 @@ const getMemoryUsageString = () => {
     return `${humanSize(used, 2)} / ${humanSize(total, 2)}`;
 };
 
+const getDiskUsageStr = (info) => osu.isNotSupported(info)
+    ? 'Unsupported'
+    : `${info.freeGb}GB Free, ${info.usedPercentage}% Used`;
+
 // Returns a framebuffer in double buffering mode
 const fb = pitft("/dev/fb1", true);
 
@@ -50,35 +54,28 @@ fb.clear();
 // const yMax = fb.size().height;
 
 const updateDisplay = function() {
-    // Clear the screen buffer
-    fb.clear();
+    osu.drive.info().then(diskInfo => {
+        // Clear the screen buffer
+        fb.clear();
 
-    // Set the foreground color to white
-    fb.color(1, 1, 1); 
-    fb.font(fontFamily, fontSize);
+        // Set the foreground color to white
+        fb.color(1, 1, 1); 
+        fb.font(fontFamily, fontSize);
 
-    // Draw the text non-centered, non-rotated, left (omitted arg)
-    fb.text(0, 20, `IP: ${getIpAddresses().join(', ')}`, false, 0);
-    fb.text(0, 45, `Date: ${getDateString()}`, false, 0);
-    fb.text(0, 70, `Uptime: ${getUptimeString()}`, false, 0);
-    fb.text(0, 95, `Load: ${getLoadString()}`, false, 0);
-    fb.text(0, 120, `Memory: ${getMemoryUsageString()}`, false, 0);
+        // Draw the text non-centered, non-rotated, left (omitted arg)
+        fb.text(0, 20, `IP: ${getIpAddresses().join(', ')}`, false, 0);
+        fb.text(0, 45, `Date: ${getDateString()}`, false, 0);
+        fb.text(0, 70, `Uptime: ${getUptimeString()}`, false, 0);
+        fb.text(0, 95, `Load: ${getLoadString()}`, false, 0);
+        fb.text(0, 120, `Memory: ${getMemoryUsageString()}`, false, 0);
+        fb.text(0, 145, `Disk: ${getDiskUsageStr(diskInfo)}`, false, 0);
 
-    osu.drive.info().then(info => {
-        const usageStr = osu.isNotSupported(info)
-            ? 'Unsupported'
-            : `${info.freeGb}GB Free, ${info.usedPercentage}% Used`;
-
-        fb.text(0, 145, `Disk: ${usageStr}`, false, 0);
-
-    }).then(() => {
         // Transfer the back buffer to the screen buffer
         fb.blit(); 
         
         // trigger another update
         setTimeout(updateDisplay, 100);
-    })
-
+    });
 };
 
 updateDisplay();
