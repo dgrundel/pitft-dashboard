@@ -50,8 +50,8 @@ const fb = pitft("/dev/fb1", true);
 // Clear the screen buffer
 fb.clear();
 
-// const xMax = fb.size().width;
-// const yMax = fb.size().height;
+const width = fb.size().width;
+const height = fb.size().height;
 
 const updateDisplay = function() {
     osu.drive.info().then(diskInfo => {
@@ -70,6 +70,12 @@ const updateDisplay = function() {
         fb.text(0, 120, `Memory: ${getMemoryUsageString()}`, false, 0);
         fb.text(0, 145, `Disk: ${getDiskUsageStr(diskInfo)}`, false, 0);
 
+        
+        fb.color(0, 1, 0);
+        fb.rect(0, 170, Math.floor(diskInfo.usedPercentage * width), 20, false, 0); // Draw a filled rectangle
+        fb.color(1, 1, 1);
+        fb.rect(0, 170, width, 20, true, 1); // Draw an outlined rectangle with a 1 pixel wide border
+        
         // Transfer the back buffer to the screen buffer
         fb.blit(); 
         
