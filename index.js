@@ -161,9 +161,9 @@ const updateDisplay = () => {
 
         // Draw the text non-centered, non-rotated, left (omitted arg)
         addTextLine(getDateString(), 24, colors.blue);
-        addTextLine(`Uptime: ${getUptimeString()}`, 14, colors.darkGray);
+        addTextLine(`Uptime: ${getUptimeString()}`, 12, colors.darkGray);
         
-        addTextLine(getIpAddresses().join(', '), 24, colors.green);
+        addTextLine(getIpAddresses().join(', '), 18, colors.green);
         
         addDivider(1, 10, colors.lightGray);
 
@@ -180,7 +180,7 @@ const updateDisplay = () => {
         gpioReady.then(() => {
             [22, 23].forEach(n => {
                 gpio.read(n, function(err, value) {
-                    addTextLine(`${n}: ${err ? err.message : value}`, 12, err ? colors.red : colors.green);
+                    addTextLine(`${n}: ${err ? err.message : value}`, 8, err ? colors.red : colors.green);
                 });
             });
 
