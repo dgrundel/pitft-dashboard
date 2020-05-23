@@ -10,6 +10,7 @@
   "license": "ISC",
   "private": true,
   "dependencies": {
+    "human-size": "^1.1.0",
     "pitft": "0.0.17"
   }
 }
