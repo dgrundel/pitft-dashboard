@@ -136,7 +136,10 @@ const updateDisplay = () => {
         addTextLine(getDateString(), 24, colors.blue);
         addTextLine(`Uptime: ${getUptimeString()}`, 14, colors.darkGray);
         addTextLine(getIpAddresses().join(', '), 28, colors.green);
+        
         addTextLine(`Load: ${getLoadString()}`);
+        // 1 minute load avg
+        addGraph(os.loadavg()[0]);
         
         addTextLine(`Memory: ${getMemoryUsageString()}`);
         addGraph(getMemoryUsagePercent());
