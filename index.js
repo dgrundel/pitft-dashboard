@@ -14,12 +14,14 @@ const getIpAddresses = () => Object.keys(ifaces).reduce((ips, ifname) => {
         .map(iface => iface.address));
 }, []);
 
+const pad = (n) => (n < 10 ? '0' : '') + n;
+
 const getDateString = () => {
     const now = new Date();
     const hour = now.getHours();
     const date = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
     const ampm = hour > 12 ? 'pm' : 'am';
-    const time = `${hour % 12}:${now.getMinutes()}:${now.getSeconds()} ${ampm}`;
+    const time = `${hour % 12}:${pag(now.getMinutes())}:${now.getSeconds()} ${ampm}`;
     return `${date} ${time}`;
 };
 
@@ -62,10 +64,10 @@ const updateDisplay = function() {
     fb.text(0, 95, `Load: ${getLoadString()}`, false, 0);
     fb.text(0, 120, `Memory: ${getMemoryUsageString()}`, false, 0);
 
-    osu.drive.free().then(info => {
+    osu.drive.info().then(info => {
         const usageStr = osu.isNotSupported(info)
             ? 'Unsupported'
-            : `${info.freeGb}GB Free, ${info.freePercentage} % Used`;
+            : `${info.freeGb}GB Free, ${info.usedPercentage}% Used`;
 
         fb.text(0, 145, `Disk: ${usageStr}`, false, 0);
 
