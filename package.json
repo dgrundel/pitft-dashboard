@@ -11,6 +11,7 @@
   "private": true,
   "dependencies": {
     "human-size": "^1.1.0",
-    "pitft": "0.0.17"
+    "pitft": "0.0.17",
+    "pretty-ms": "^7.0.0"
   }
 }
