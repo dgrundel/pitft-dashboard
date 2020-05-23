@@ -71,8 +71,8 @@ const updateDisplay = function() {
         fb.text(0, 145, `Disk: ${getDiskUsageStr(diskInfo)}`, false, 0);
 
         
-        fb.color(1, 1, 1);
-        fb.rect(0, 168, width, 24, true, 1); // Draw an outlined rectangle with a 1 pixel wide border
+        // fb.color(1, 1, 1);
+        // fb.rect(0, 168, width, 24, true, 1); // Draw an outlined rectangle with a 1 pixel wide border
         fb.color(0, 1, 0);
         fb.rect(0, 170, Math.floor((diskInfo.usedPercentage / 100) * width), 20, false, 0); // Draw a filled rectangle
         
