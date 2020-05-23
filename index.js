@@ -108,6 +108,17 @@ const updateDisplay = () => {
             y += lineHeight;
         };
 
+        const addDivider = (thickness = 1, padding = getLineGeometry().padding, color = colors.darkGray) => {
+            const divderColor = hexToRgb(colors.darkGray);
+            
+            y += padding;
+            
+            fb.color(...divderColor);
+            fb.line(0, y, width, y, thickness, ...divderColor);
+
+            y += thickness + padding;
+        };
+
         const addGraph = (pct) => {
             const { fontSize, lineHeight, padding } = getLineGeometry();
             let barColor = colors.green;
@@ -135,8 +146,11 @@ const updateDisplay = () => {
         // Draw the text non-centered, non-rotated, left (omitted arg)
         addTextLine(getDateString(), 24, colors.blue);
         addTextLine(`Uptime: ${getUptimeString()}`, 14, colors.darkGray);
-        addTextLine(getIpAddresses().join(', '), 28, colors.green);
         
+        addTextLine(getIpAddresses().join(', '), 24, colors.green);
+        
+        addDivider();
+
         addTextLine(`Load: ${getLoadString()}`);
         // 1 minute load avg
         addGraph(os.loadavg()[0]);
