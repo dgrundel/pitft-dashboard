@@ -7,9 +7,9 @@ const osu = require('node-os-utils');
 const humanSize = require('human-size');
 const prettyMs = require('pretty-ms');
 
-const gpioButtons = [18, 21, 27];
+const gpioButtons = [12, 13];
 
-gpio.setMode(gpio.MODE_BCM);
+gpio.setMode(gpio.MODE_RPI);
 
 const gpioMessages = [];
 
