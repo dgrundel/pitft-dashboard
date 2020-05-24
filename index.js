@@ -7,15 +7,16 @@ const osu = require('node-os-utils');
 const humanSize = require('human-size');
 const prettyMs = require('pretty-ms');
 
+const gpioButtons = [18, 21, 27];
+
 gpio.setMode(gpio.MODE_BCM);
 // gpio.setup(18, gpio.DIR_HIGH, (err) => {
 //     if (err) throw err;
 //     // gpio.write(18, false, (err) => { if (err) throw err; });
 // });
 
-
 let gpioReady = false;
-Promise.all([22, 23].map(n => {
+Promise.all(gpioButtons.map(n => {
     return new Promise((resolve, reject) => {
         gpio.setup(n, gpio.DIR_IN, (err) => err ? reject(err) : resolve())
     });
@@ -180,7 +181,7 @@ const updateDisplay = () => {
         addTextLine(`Disk: ${getDiskUsageStr(diskInfo)}`);
         addGraph(parseFloat(diskInfo.usedPercentage) / 100);
         
-        Promise.all([22, 23].map(n => new Promise((resolve) => {
+        Promise.all(gpioButtons.map(n => new Promise((resolve) => {
             if (!gpioReady) {
                 resolve('NR');
                 return;
