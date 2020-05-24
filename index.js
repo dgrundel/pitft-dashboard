@@ -16,7 +16,7 @@ gpio.on('change', function(channel, value) {
     gpioMessages.push(`${channel}: ${value}`);
 });
 gpio.setup(gpioOut, gpio.DIR_HIGH);
-gpioButtons.map(n => gpio.setup(n, gpio.DIR_IN, gpio.EDGE_BOTH, e => e ? gpioMessages.push(e.message): 0));
+gpioButtons.map(n => gpio.setup(n, gpio.DIR_IN, gpio.EDGE_FALLING, e => e ? gpioMessages.push(e.message): 0));
 
 // Returns a framebuffer in double buffering mode
 const fb = pitft("/dev/fb1", true);
