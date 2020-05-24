@@ -10,19 +10,14 @@ const prettyMs = require('pretty-ms');
 const gpioButtons = [18, 21, 27];
 
 gpio.setMode(gpio.MODE_BCM);
-// gpio.setup(18, gpio.DIR_HIGH, (err) => {
-//     if (err) throw err;
-//     // gpio.write(18, false, (err) => { if (err) throw err; });
-// });
 
-let gpioReady = false;
-Promise.all(gpioButtons.map(n => {
-    return new Promise((resolve, reject) => {
-        gpio.setup(n, gpio.DIR_IN, (err) => err ? reject(err) : resolve())
-    });
-})).then(() => {
-    gpioReady = true;
+const gpioMessages = [];
+
+gpio.on('change', function(channel, value) {
+    gpioMessages.push(`${channel}: ${value}`);
 });
+
+gpioButtons.map(n => gpio.setup(n, gpio.DIR_IN, gpio.EDGE_BOTH, e => e ? gpioMessages.push(e.message): 0));
 
 // Returns a framebuffer in double buffering mode
 const fb = pitft("/dev/fb1", true);
@@ -181,24 +176,13 @@ const updateDisplay = () => {
         addTextLine(`Disk: ${getDiskUsageStr(diskInfo)}`);
         addGraph(parseFloat(diskInfo.usedPercentage) / 100);
         
-        Promise.all(gpioButtons.map(n => new Promise((resolve) => {
-            if (!gpioReady) {
-                resolve('NR');
-                return;
-            }
+        addTextLine(gpioMessages.join('; '), 8, colors.gold);
             
-            gpio.read(n, function(err, value) {
-                resolve(`${n}: ${err ? err.message : value}`);
-            });
-        }))).then((values) => {
-            addTextLine(values.join('; '), 8, colors.gold);
-            
-            // Transfer the back buffer to the screen buffer
-            setTimeout(() => fb.blit(), 20);
-            
-            // trigger another update
-            setTimeout(updateDisplay, 120);
-        });
+        // Transfer the back buffer to the screen buffer
+        setTimeout(() => fb.blit(), 20);
+        
+        // trigger another update
+        setTimeout(updateDisplay, 120);
     });
 };
 
