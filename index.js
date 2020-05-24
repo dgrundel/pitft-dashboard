@@ -7,16 +7,13 @@ const osu = require('node-os-utils');
 const humanSize = require('human-size');
 const prettyMs = require('pretty-ms');
 
-const gpioButtons = [12, 13];
-
-gpio.setMode(gpio.MODE_RPI);
-
+const gpioButtons = [];
 const gpioMessages = [];
 
+gpio.setMode(gpio.MODE_RPI);
 gpio.on('change', function(channel, value) {
     gpioMessages.push(`${channel}: ${value}`);
 });
-
 gpioButtons.map(n => gpio.setup(n, gpio.DIR_IN, gpio.EDGE_BOTH, e => e ? gpioMessages.push(e.message): 0));
 
 // Returns a framebuffer in double buffering mode
