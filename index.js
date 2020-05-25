@@ -12,9 +12,9 @@ const gpioButtons = [33, 35];
 const gpioMessages = [];
 
 gpio.setMode(gpio.MODE_RPI);
-gpio.on('change', function(channel, value) {
-    gpioMessages.push(`${channel}: ${value}`);
-});
+// gpio.on('change', function(channel, value) {
+//     gpioMessages.push(`${channel}: ${value}`);
+// });
 gpio.setup(gpioOut, gpio.DIR_HIGH);
 gpioButtons.map(n => gpio.setup(n, gpio.DIR_IN, gpio.EDGE_FALLING, e => e ? gpioMessages.push(e.message): 0));
 
@@ -38,6 +38,14 @@ const colors = {
     lightGray: 'edf4f2',
     purple: '4d089a',
     red: 'd32626'
+};
+
+const onButtonPress = (id, callback) => {
+    gpio.on('change', function(channel, value) {
+        if (id === channel && value === false) {
+            callback();
+        }
+    });
 };
 
 const hexToRgb = (hexStr) => [
@@ -184,5 +192,8 @@ const updateDisplay = () => {
         setTimeout(updateDisplay, 120);
     });
 };
+
+onButtonPress(33, () => gpioMessages.push('33'));
+onButtonPress(35, () => gpioMessages.push('35'));
 
 updateDisplay();
