@@ -9,17 +9,14 @@ import * as prettyMs from 'pretty-ms';
 
 import { setBacklight, toggleBacklight } from './modules/backlight';
 import { COLORS, hexToRgb } from './modules/colors';
+import { cpuStats } from './modules/stats/cpuStats';
 
 const gpioOut = 37;
 const gpioButtons = [33, 35];
-const gpioMessages: string[] = [];
 
 gpio.setMode(gpio.MODE_RPI);
-// gpio.on('change', function(channel, value) {
-//     gpioMessages.push(`${channel}: ${value}`);
-// });
 gpio.setup(gpioOut, gpio.DIR_HIGH);
-gpioButtons.map(n => gpio.setup(n, gpio.DIR_IN, gpio.EDGE_FALLING, e => e ? gpioMessages.push(e.message): 0));
+gpioButtons.map(n => gpio.setup(n, gpio.DIR_IN, gpio.EDGE_FALLING, e => { throw e; }));
 
 // Returns a framebuffer in double buffering mode
 const fb = pitft("/dev/fb1", true);
@@ -170,7 +167,8 @@ const updateDisplay = () => {
         addTextLine(`Disk: ${getDiskUsageStr(diskInfo)}`);
         addGraph(parseFloat(diskInfo.usedPercentage.toString()) / 100);
         
-        addTextLine(gpioMessages.join('; '), 8, COLORS.gold);
+        const lastStatPoint = cpuStats.data[cpuStats.data.length - 1];
+        addTextLine(`cpuStats: ${cpuStats.data.length}, ${lastStatPoint.time}: ${lastStatPoint.value[0].toFixed(2)}`, 8, COLORS.gold);
             
         // Transfer the back buffer to the screen buffer
         setTimeout(() => fb.blit(), 20);
@@ -184,6 +182,6 @@ const updateDisplay = () => {
 setBacklight(true);
 
 onButtonPress(33, () => toggleBacklight());
-onButtonPress(35, () => gpioMessages.push('35'));
+// onButtonPress(35, () => gpioMessages.push('35'));
 
 updateDisplay();
