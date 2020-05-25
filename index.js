@@ -46,7 +46,7 @@ const colors = {
 
 const toggleBacklight = (enable) => {
     backlightEnabled = enable === true;
-    fs.writeFile(sysFsBacklightPath, backlightEnabled ? '1' : '0', 'utf8');
+    fs.writeFileSync(sysFsBacklightPath, backlightEnabled ? '1' : '0');
 }
 
 const onButtonPress = (id, callback) => {
