@@ -65,7 +65,7 @@ const hexToRgb = (hexStr) => [
 
 const pad = (n) => (n < 10 ? '0' : '') + n;
 
-const getIpAddresses = () => Object.values(os.networkInterfaces())
+const getIpAddresses = () => (Object.values(os.networkInterfaces()) as any[])
     .reduce((ips, ifaces) => ips.concat(
             ifaces.filter(iface => iface.family === 'IPv4' && iface.internal === false)
                 .map(iface => iface.address)
