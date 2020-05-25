@@ -33,7 +33,6 @@ const fontFamily = 'roboto';
 const defaultFontSize = 18;
 const defaultLineHeight = 22;
 
-
 const onButtonPress = (id: number, callback: () => void) => {
     gpio.on('change', function(channel, value) {
         if (id === channel && value === false) {

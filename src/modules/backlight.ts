@@ -4,7 +4,7 @@ const BACKLIGHT_SYSFS_PATH = '/sys/class/backlight/soc\:backlight/brightness';
 const BACKLIGHT_ON = '1';
 const BACKLIGHT_OFF = '0';
 
-let backlightEnabled = fs.readFileSync(BACKLIGHT_SYSFS_PATH).toString() === BACKLIGHT_ON;
+let backlightEnabled = fs.readFileSync(BACKLIGHT_SYSFS_PATH).toString() !== BACKLIGHT_OFF;
 
 export const isBacklightOn = () => backlightEnabled;
 
@@ -14,5 +14,5 @@ export const setBacklight = (enable: boolean) => {
 };
 
 export const toggleBacklight = () => {
-    setBacklight(!isBacklightOn());
+    setBacklight(!backlightEnabled);
 }
