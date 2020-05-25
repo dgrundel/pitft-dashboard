@@ -8,7 +8,7 @@ import * as prettyBytes from 'pretty-bytes';
 import * as prettyMs from 'pretty-ms';
 
 import { setBacklight, toggleBacklight } from './modules/backlight';
-import { COLORS, hexToRgb } from './modules/colors';
+import { COLORS, hexToRgb, GRAPH_COLORS } from './modules/colors';
 import { cpuStats } from './modules/stats/cpuStats';
 
 const gpioOut = 37;
@@ -114,18 +114,18 @@ const updateDisplay = () => {
             y += lineHeight;
         };
 
-        const addDivider = (thickness = 1, padding = getLineGeometry().padding, color = COLORS.darkGray) => {
+        const addDivider = (lineStroke = 1, padding = getLineGeometry().padding, color = COLORS.darkGray) => {
             const divderColor = hexToRgb(COLORS.darkGray);
             
             y += padding;
             
             fb.color(...divderColor);
-            fb.line(0, y, width, y, thickness);
+            fb.line(0, y, width, y, lineStroke);
 
-            y += thickness + padding;
+            y += lineStroke + padding;
         };
 
-        const addGraph = (pct: number) => {
+        const addHorizontalGraph = (pct: number) => {
             const { fontSize, lineHeight, padding } = getLineGeometry();
             let barColor = COLORS.green;
             if (pct > .8) {
@@ -146,6 +146,56 @@ const updateDisplay = () => {
             y += lineHeight;
         }
 
+        const addLineGraph = (data: number[][], height = 100) => {
+            const hPadding = 4;
+            const lineStroke = 1;
+
+            // how large is the largest set of data points?
+            const maxLength = data.reduce((max, values) => Math.max(max, values.length), -Infinity);
+            if (maxLength === 0) {
+                return;
+            }
+            // how far to space points on graph
+            const xStep = Math.floor((width - (hPadding * 2))/maxLength);
+            
+            // calculate upper/lower bounds of all data points
+            const maxValue = Math.ceil(data.reduce((max, values) => Math.max(max, ...values), -Infinity));
+            const minValue = Math.floor(data.reduce((min, values) => Math.min(min, ...values), Infinity));
+            const range = maxValue - minValue;
+
+            // draw a nice background
+            fb.color(...hexToRgb(COLORS.darkGray));
+            fb.rect(0, y, width, height);
+
+            // x cursor
+            let x = hPadding;
+
+            data.forEach((dataSet, dataSetIndex) => {
+                // reset x cursor
+                x = hPadding;
+                
+                // i starts at 1 to skip first value (we look back at it)
+                for(let i = 1; i < dataSet.length; i++) {
+                    const prev = dataSet[i -1];
+                    const value = dataSet[i];
+
+                    const x1 = x;
+                    const y1 = Math.floor((1 - (prev/range)) * height);
+                    
+                    x += xStep;
+
+                    const x2 = x;
+                    const y2 = Math.floor((1 - (value/range)) * height);
+
+                    fb.color(...hexToRgb(GRAPH_COLORS[dataSetIndex]));
+                    fb.line(x1, y1, x2, y2, lineStroke);
+                }
+            });
+
+            // increment our y cursor
+            y += height;
+        }
+
         // Clear the screen buffer
         fb.clear();
 
@@ -157,18 +207,20 @@ const updateDisplay = () => {
         
         addDivider(1, 10, COLORS.lightGray);
 
-        addTextLine(`Load: ${getLoadString()}`);
-        // 1 minute load avg
-        addGraph(os.loadavg()[0]);
+        // addTextLine(`Load: ${getLoadString()}`);
+        // // 1 minute load avg
+        // addHorizontalGraph(os.loadavg()[0]);
         
-        addTextLine(`Memory: ${getMemoryUsageString()}`);
-        addGraph(getMemoryUsagePercent());
+        // addTextLine(`Memory: ${getMemoryUsageString()}`);
+        // addHorizontalGraph(getMemoryUsagePercent());
 
-        addTextLine(`Disk: ${getDiskUsageStr(diskInfo)}`);
-        addGraph(parseFloat(diskInfo.usedPercentage.toString()) / 100);
+        // addTextLine(`Disk: ${getDiskUsageStr(diskInfo)}`);
+        // addHorizontalGraph(parseFloat(diskInfo.usedPercentage.toString()) / 100);
         
         const lastStatPoint = cpuStats.data[cpuStats.data.length - 1];
         addTextLine(`cpuStats: ${cpuStats.data.length}, ${lastStatPoint.time}: ${lastStatPoint.value[0].toFixed(2)}`, 8, COLORS.gold);
+
+        addLineGraph(cpuStats.data.map(datum => datum.value));
             
         // Transfer the back buffer to the screen buffer
         setTimeout(() => fb.blit(), 20);
