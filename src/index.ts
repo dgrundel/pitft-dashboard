@@ -152,7 +152,7 @@ const updateDisplay = () => {
 
             // how large is the largest set of data points?
             const maxLength = data.reduce((max, values) => Math.max(max, values.length), -Infinity);
-            if (maxLength === 0) {
+            if (maxLength < 2) {
                 return;
             }
             // how far to space points on graph
@@ -165,7 +165,7 @@ const updateDisplay = () => {
 
             // draw a nice background
             fb.color(...hexToRgb(COLORS.darkGray));
-            fb.rect(0, y, width, height);
+            fb.rect(0, y, width, y + height);
 
             // x cursor
             let x = hPadding;
@@ -180,12 +180,12 @@ const updateDisplay = () => {
                     const value = dataSet[i];
 
                     const x1 = x;
-                    const y1 = Math.floor((1 - (prev/range)) * height);
+                    const y1 = y + Math.floor((1 - (prev/range)) * height);
                     
                     x += xStep;
 
                     const x2 = x;
-                    const y2 = Math.floor((1 - (value/range)) * height);
+                    const y2 = y + Math.floor((1 - (value/range)) * height);
 
                     fb.color(...hexToRgb(GRAPH_COLORS[dataSetIndex]));
                     fb.line(x1, y1, x2, y2, lineStroke);
