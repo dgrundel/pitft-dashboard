@@ -180,6 +180,9 @@ const updateDisplay = () => {
     });
 };
 
+// turn the backlight on at startup
+setBacklight(true);
+
 onButtonPress(33, () => toggleBacklight());
 onButtonPress(35, () => gpioMessages.push('35'));
 
