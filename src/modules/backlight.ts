@@ -6,7 +6,7 @@ const BACKLIGHT_OFF = '0';
 
 let state = fs.readFileSync(BACKLIGHT_SYSFS_PATH).toString() !== BACKLIGHT_OFF;
 
-let timeoutInterval = 5000;
+let timeoutInterval = 30000;
 let timeoutId: NodeJS.Timeout = undefined;
 
 export const isBacklightOn = () => state;
