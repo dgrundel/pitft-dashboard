@@ -157,11 +157,11 @@ const updateDisplay = () => {
                 return;
             }
             // how far to space points on graph
-            const xStep = Math.floor((width - (hPadding * 2))/maxLength);
+            const xStep = Math.floor((width - (hPadding * 2)) / (maxLength - 1));
             
             // calculate upper/lower bounds of all data points
-            const maxValue = Math.ceil(data.reduce((max, values) => Math.max(max, ...values), -Infinity));
-            const minValue = Math.floor(data.reduce((min, values) => Math.min(min, ...values), Infinity));
+            const maxValue = data.reduce((max, values) => Math.max(max, ...values), -Infinity);
+            const minValue = data.reduce((min, values) => Math.min(min, ...values), Infinity);
             const range = maxValue - minValue;
 
             // draw a nice background
@@ -177,16 +177,16 @@ const updateDisplay = () => {
                 
                 // i starts at 1 to skip first value (we look back at it)
                 for(let i = 1; i < dataSet.length; i++) {
-                    const prev = dataSet[i -1];
-                    const value = dataSet[i];
+                    const v1 = dataSet[i -1];
+                    const v2 = dataSet[i];
 
                     const x1 = x;
-                    const y1 = y + Math.floor((1 - (prev/range)) * height);
+                    const y1 = y + Math.floor((1 - (v1/range)) * height);
                     
                     x += xStep;
 
                     const x2 = x;
-                    const y2 = y + Math.floor((1 - (value/range)) * height);
+                    const y2 = y + Math.floor((1 - (v2/range)) * height);
 
                     fb.color(...hexToRgb(GRAPH_COLORS[dataSetIndex]));
                     fb.line(x1, y1, x2, y2, lineStroke);
