@@ -1,11 +1,15 @@
 const pitft = require('pitft');
 const gpio = require('rpi-gpio');
 
+const fs = require('fs');
 const os = require('os');
 const osu = require('node-os-utils');
 
 const humanSize = require('human-size');
 const prettyMs = require('pretty-ms');
+
+const sysFsBacklightPath = '/sys/class/backlight/soc\:backlight/brightness';
+let backlightEnabled = true;
 
 const gpioOut = 37;
 const gpioButtons = [33, 35];
@@ -39,6 +43,11 @@ const colors = {
     purple: '4d089a',
     red: 'd32626'
 };
+
+const toggleBacklight = (enable) => {
+    backlightEnabled = enable === true;
+    fs.writeFile(sysFsBacklightPath, backlightEnabled ? '1' : '0', 'utf8');
+}
 
 const onButtonPress = (id, callback) => {
     gpio.on('change', function(channel, value) {
@@ -193,7 +202,8 @@ const updateDisplay = () => {
     });
 };
 
-onButtonPress(33, () => gpioMessages.push('33'));
+onButtonPress(33, () => toggleBacklight(!backlightEnabled));
 onButtonPress(35, () => gpioMessages.push('35'));
 
+toggleBacklight(true);
 updateDisplay();
