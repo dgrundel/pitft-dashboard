@@ -1,19 +1,18 @@
-const pitft = require('pitft');
-const gpio = require('rpi-gpio');
+import * as pitft from 'pitft';
+import * as gpio from 'rpi-gpio';
 
-const fs = require('fs');
-const os = require('os');
-const osu = require('node-os-utils');
+import * as os from 'os';
+import * as osu from 'node-os-utils';
 
-const humanSize = require('human-size');
-const prettyMs = require('pretty-ms');
+import * as prettyBytes from 'pretty-bytes';
+import * as prettyMs from 'pretty-ms';
 
-const sysFsBacklightPath = '/sys/class/backlight/soc\:backlight/brightness';
-let backlightEnabled = true;
+import { setBacklight, toggleBacklight } from './modules/backlight';
+import { COLORS, hexToRgb } from './modules/colors';
 
 const gpioOut = 37;
 const gpioButtons = [33, 35];
-const gpioMessages = [];
+const gpioMessages: string[] = [];
 
 gpio.setMode(gpio.MODE_RPI);
 // gpio.on('change', function(channel, value) {
@@ -33,23 +32,9 @@ const height = fb.size().height; // 240
 const fontFamily = 'roboto';
 const defaultFontSize = 18;
 const defaultLineHeight = 22;
-const colors = {
-    blue: '035aa6',
-    darkGray: '888888',
-    darkGreen: '06623b',
-    gold: 'f5a31a',
-    green: '79d70f',
-    lightGray: 'edf4f2',
-    purple: '4d089a',
-    red: 'd32626'
-};
 
-const toggleBacklight = (enable) => {
-    backlightEnabled = enable === true;
-    fs.writeFileSync(sysFsBacklightPath, backlightEnabled ? '1' : '0');
-}
 
-const onButtonPress = (id, callback) => {
+const onButtonPress = (id: number, callback: () => void) => {
     gpio.on('change', function(channel, value) {
         if (id === channel && value === false) {
             callback();
@@ -57,16 +42,10 @@ const onButtonPress = (id, callback) => {
     });
 };
 
-const hexToRgb = (hexStr) => [
-    parseInt(hexStr.substring(0, 2), 16) / 255,
-    parseInt(hexStr.substring(2, 4), 16) / 255,
-    parseInt(hexStr.substring(4), 16) / 255
-];
+const pad = (n: number) => (n < 10 ? '0' : '') + n;
 
-const pad = (n) => (n < 10 ? '0' : '') + n;
-
-const getIpAddresses = () => (Object.values(os.networkInterfaces()) as any[])
-    .reduce((ips, ifaces) => ips.concat(
+const getIpAddresses = () => Object.values(os.networkInterfaces())
+    .reduce((ips: string[], ifaces: os.NetworkInterfaceInfo[]) => ips.concat(
             ifaces.filter(iface => iface.family === 'IPv4' && iface.internal === false)
                 .map(iface => iface.address)
         ),
@@ -94,7 +73,7 @@ const getMemoryUsageString = () => {
     const total = os.totalmem(); // bytes
     const used = total - free; // bytes
 
-    return `${humanSize(used, 2)} / ${humanSize(total, 2)}`;
+    return `${prettyBytes(used)} / ${prettyBytes(total)}`;
 };
 
 const getMemoryUsagePercent = () => {
@@ -105,7 +84,7 @@ const getMemoryUsagePercent = () => {
     return used/total;
 };
 
-const getDiskUsageStr = (info) => osu.isNotSupported(info)
+const getDiskUsageStr = (info: osu.DriveInfo) => osu.isNotSupported(info)
     ? 'Unsupported'
     : `${info.freeGb}GB Free, ${info.usedPercentage}% Used`;
 
@@ -121,11 +100,11 @@ const getLineGeometry = (fontSize = defaultFontSize) => {
 };
 
 const updateDisplay = () => {
-    osu.drive.info().then(diskInfo => {
+    osu.drive.info('/').then(diskInfo => {
         // vertical cursor
         let y = 0;
 
-        const addTextLine = (s, sizeOverride = undefined, textColor = colors.lightGray) => {
+        const addTextLine = (s: string, sizeOverride: number = undefined, textColor = COLORS.lightGray) => {
             const { fontSize, lineHeight, padding } = getLineGeometry(sizeOverride);
 
             // place baseline of text with padding
@@ -139,28 +118,28 @@ const updateDisplay = () => {
             y += lineHeight;
         };
 
-        const addDivider = (thickness = 1, padding = getLineGeometry().padding, color = colors.darkGray) => {
-            const divderColor = hexToRgb(colors.darkGray);
+        const addDivider = (thickness = 1, padding = getLineGeometry().padding, color = COLORS.darkGray) => {
+            const divderColor = hexToRgb(COLORS.darkGray);
             
             y += padding;
             
             fb.color(...divderColor);
-            fb.line(0, y, width, y, thickness, ...divderColor);
+            fb.line(0, y, width, y, thickness);
 
             y += thickness + padding;
         };
 
-        const addGraph = (pct) => {
+        const addGraph = (pct: number) => {
             const { fontSize, lineHeight, padding } = getLineGeometry();
-            let barColor = colors.green;
+            let barColor = COLORS.green;
             if (pct > .8) {
-                barColor = colors.red;
+                barColor = COLORS.red;
             } else if (pct > .6) {
-                barColor = colors.gold;
+                barColor = COLORS.gold;
             }
 
             // draw a rectangle the full width of the screen and full line height
-            fb.color(...hexToRgb(colors.lightGray));
+            fb.color(...hexToRgb(COLORS.lightGray));
             fb.rect(0, y, width, lineHeight);
 
             // draw the bar at the height of the text and pad all four sides
@@ -175,12 +154,12 @@ const updateDisplay = () => {
         fb.clear();
 
         // Draw the text non-centered, non-rotated, left (omitted arg)
-        addTextLine(getDateString(), 24, colors.blue);
-        addTextLine(`Uptime: ${getUptimeString()}`, 12, colors.darkGray);
+        addTextLine(getDateString(), 24, COLORS.blue);
+        addTextLine(`Uptime: ${getUptimeString()}`, 12, COLORS.darkGray);
         
-        addTextLine(getIpAddresses().join(', '), 18, colors.green);
+        addTextLine(getIpAddresses().join(', '), 18, COLORS.green);
         
-        addDivider(1, 10, colors.lightGray);
+        addDivider(1, 10, COLORS.lightGray);
 
         addTextLine(`Load: ${getLoadString()}`);
         // 1 minute load avg
@@ -190,9 +169,9 @@ const updateDisplay = () => {
         addGraph(getMemoryUsagePercent());
 
         addTextLine(`Disk: ${getDiskUsageStr(diskInfo)}`);
-        addGraph(parseFloat(diskInfo.usedPercentage) / 100);
+        addGraph(parseFloat(diskInfo.usedPercentage.toString()) / 100);
         
-        addTextLine(gpioMessages.join('; '), 8, colors.gold);
+        addTextLine(gpioMessages.join('; '), 8, COLORS.gold);
             
         // Transfer the back buffer to the screen buffer
         setTimeout(() => fb.blit(), 20);
@@ -202,8 +181,7 @@ const updateDisplay = () => {
     });
 };
 
-onButtonPress(33, () => toggleBacklight(!backlightEnabled));
+onButtonPress(33, () => toggleBacklight());
 onButtonPress(35, () => gpioMessages.push('35'));
 
-toggleBacklight(true);
 updateDisplay();
