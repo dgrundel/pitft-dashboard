@@ -152,7 +152,7 @@ const updateDisplay = () => {
             const lineStroke = 1;
 
             // draw axes
-            fb.color(...hexToRgb(COLORS.lightGray));
+            fb.color(...hexToRgb(COLORS.darkGray));
             fb.line(0, y, 0, y + graphHeight, lineStroke);
             fb.line(0, y + graphHeight, width, y + graphHeight, lineStroke);
 
@@ -166,7 +166,7 @@ const updateDisplay = () => {
 
             // draw vertical lines for where data points go
             for (let x = xStep; x < width; x += xStep) {
-                fb.color(...hexToRgb(COLORS.darkGray));
+                fb.color(...hexToRgb(COLORS.darkDarkGray));
                 fb.line(x, y, x, y + graphHeight, lineStroke);
             }
             
