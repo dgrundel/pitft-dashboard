@@ -168,16 +168,12 @@ const updateDisplay = () => {
             const minValue = data.reduce((min, values) => Math.min(min, ...values), Infinity);
             const range = maxValue - minValue;
 
+            const calcY = (v: number) => {
+                return y + Math.floor((1 - (Math.abs(v - minValue) / range)) * graphHeight);
+            };
+
             // x cursor
             let x = hPadding;
-
-            // console.log({
-            //     maxLength,
-            //     xStep,
-            //     maxValue,
-            //     minValue,
-            //     range
-            // });
 
             data.forEach((dataSet, dataSetIndex) => {
                 // reset x cursor
@@ -189,19 +185,10 @@ const updateDisplay = () => {
                     const v2 = dataSet[i];
 
                     const x1 = x;
-                    const y1 = y + graphHeight - Math.floor(Math.abs(v1) / range * graphHeight);
+                    const y1 = calcY(v1);
                     
-                    x += xStep;
-
-                    const x2 = x;
-                    const y2 = y + graphHeight - Math.floor(Math.abs(v2) / range * graphHeight);
-
-                    // console.log({
-                    //     dataSetIndex,
-                    //     i,
-                    //     x1, x2,
-                    //     y1, y2
-                    // });
+                    const x2 = (x += xStep);
+                    const y2 = calcY(v2);
 
                     fb.color(...hexToRgb(GRAPH_COLORS[dataSetIndex]));
                     fb.line(x1, y1, x2, y2, lineStroke);
