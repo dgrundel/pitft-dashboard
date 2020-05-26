@@ -158,6 +158,25 @@ const updateDisplay = () => {
             fb.line(hPadding, y, hPadding, y + graphHeight, lineStroke);
             fb.line(hPadding, y + graphHeight, width - hPadding, y + graphHeight, lineStroke);
 
+            //draw labels
+            if (labels.length > 0) {
+                const labelXStep = Math.floor((width - (hPadding * 2)) / labels.length);
+                const swatchY = y + graphHeight;
+                const swatchSize = labelHeight;
+                let x = hPadding;
+
+                labels.forEach((text, labelIndex) => {
+                    fb.color(...hexToRgb(GRAPH_COLORS[labelIndex]));
+                    fb.rect(x, swatchY, swatchSize, swatchSize);
+
+                    fb.color(...hexToRgb(COLORS.lightGray));
+                    fb.font(fontFamily, labelHeight);
+                    fb.text(x + swatchSize + hPadding, swatchY + labelHeight, text);
+
+                    x += labelXStep;
+                });
+            }
+
             // how large is the largest set of data points?
             const maxLength = data.reduce((max, values) => Math.max(max, values.length), -Infinity);
             if (maxLength < 2) {
@@ -203,25 +222,6 @@ const updateDisplay = () => {
                     fb.line(x1, y1, x2, y2, lineStroke);
                 }
             });
-
-            //draw labels
-            if (labels.length > 0) {
-                const labelXStep = Math.floor((width - (hPadding * 2)) / labels.length);
-                const swatchY = y + graphHeight;
-                const swatchSize = labelHeight;
-                let x = hPadding;
-
-                labels.forEach((text, labelIndex) => {
-                    fb.color(...hexToRgb(GRAPH_COLORS[labelIndex]));
-                    fb.rect(x, swatchY, swatchSize, swatchSize);
-
-                    fb.color(...hexToRgb(COLORS.lightGray));
-                    fb.font(fontFamily, labelHeight);
-                    fb.text(x + swatchSize + hPadding, swatchY + labelHeight, text);
-
-                    x += labelXStep;
-                });
-            }
 
             // increment our y cursor
             y += totalHeight;
