@@ -3,7 +3,7 @@ export type RBGColor = [number, number, number];
 
 export const COLORS = {
     blue: '035aa6',
-    darkDarkGray: '222222',
+    darkDarkGray: '111111',
     darkGray: '333333',
     darkGreen: '06623b',
     gold: 'f5a31a',
