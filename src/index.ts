@@ -147,13 +147,14 @@ const updateDisplay = () => {
             y += lineHeight;
         }
 
-        const addLineGraph = (data: number[][], graphHeight = 60) => {
+        const addLineGraph = (data: number[][], graphHeight = 40) => {
             const hPadding = 4;
             const lineStroke = 1;
 
-            // draw a nice background
-            fb.color(...hexToRgb(COLORS.darkGray));
-            fb.rect(0, y, width, y + graphHeight);
+            // draw axes
+            fb.color(...hexToRgb(COLORS.lightGray));
+            fb.line(0, y, 0, y + graphHeight, lineStroke);
+            fb.line(0, y + graphHeight, width, y + graphHeight, lineStroke);
 
             // how large is the largest set of data points?
             const maxLength = data.reduce((max, values) => Math.max(max, values.length), -Infinity);
@@ -162,6 +163,12 @@ const updateDisplay = () => {
             }
             // how far to space points on graph
             const xStep = Math.floor((width - (hPadding * 2)) / (maxLength - 1));
+
+            // draw vertical lines for where data points go
+            for (let x = xStep; x < width; x += xStep) {
+                fb.color(...hexToRgb(COLORS.darkGray));
+                fb.line(x, y, x, y + graphHeight, lineStroke);
+            }
             
             // calculate upper/lower bounds of all data points
             const maxValue = data.reduce((max, values) => Math.max(max, ...values), -Infinity);
