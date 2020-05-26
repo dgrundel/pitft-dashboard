@@ -151,6 +151,10 @@ const updateDisplay = () => {
             const hPadding = 4;
             const lineStroke = 1;
 
+            // draw a nice background
+            fb.color(...hexToRgb(COLORS.darkGray));
+            fb.rect(0, y, width, y + graphHeight);
+
             // how large is the largest set of data points?
             const maxLength = data.reduce((max, values) => Math.max(max, values.length), -Infinity);
             if (maxLength < 2) {
@@ -164,12 +168,16 @@ const updateDisplay = () => {
             const minValue = data.reduce((min, values) => Math.min(min, ...values), Infinity);
             const range = maxValue - minValue;
 
-            // draw a nice background
-            fb.color(...hexToRgb(COLORS.darkGray));
-            fb.rect(0, y, width, y + graphHeight);
-
             // x cursor
             let x = hPadding;
+
+            console.log({
+                maxLength,
+                xStep,
+                maxValue,
+                minValue,
+                range
+            });
 
             data.forEach((dataSet, dataSetIndex) => {
                 // reset x cursor
@@ -181,12 +189,19 @@ const updateDisplay = () => {
                     const v2 = dataSet[i];
 
                     const x1 = x;
-                    const y1 = y + Math.floor((1 - Math.abs(v1/range)) * graphHeight);
+                    const y1 = y + graphHeight - Math.floor(Math.abs(v1) / range * graphHeight);
                     
                     x += xStep;
 
                     const x2 = x;
-                    const y2 = y + Math.floor((1 - Math.abs(v2/range)) * graphHeight);
+                    const y2 = y + graphHeight - Math.floor(Math.abs(v2) / range * graphHeight);
+
+                    console.log({
+                        dataSetIndex,
+                        i,
+                        x1, x2,
+                        y1, y2
+                    });
 
                     fb.color(...hexToRgb(GRAPH_COLORS[dataSetIndex]));
                     fb.line(x1, y1, x2, y2, lineStroke);
