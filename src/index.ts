@@ -147,7 +147,7 @@ const updateDisplay = () => {
             y += lineHeight;
         }
 
-        const addLineGraph = (data: number[][], height = 80) => {
+        const addLineGraph = (data: number[][], graphHeight = 80) => {
             const hPadding = 4;
             const lineStroke = 1;
 
@@ -166,7 +166,7 @@ const updateDisplay = () => {
 
             // draw a nice background
             fb.color(...hexToRgb(COLORS.darkGray));
-            fb.rect(0, y, width, y + height);
+            fb.rect(0, y, width, y + graphHeight);
 
             // x cursor
             let x = hPadding;
@@ -181,12 +181,12 @@ const updateDisplay = () => {
                     const v2 = dataSet[i];
 
                     const x1 = x;
-                    const y1 = y + Math.floor((1 - (v1/range)) * height);
+                    const y1 = y + Math.floor((1 - Math.abs(v1/range)) * graphHeight);
                     
                     x += xStep;
 
                     const x2 = x;
-                    const y2 = y + Math.floor((1 - (v2/range)) * height);
+                    const y2 = y + Math.floor((1 - Math.abs(v2/range)) * graphHeight);
 
                     fb.color(...hexToRgb(GRAPH_COLORS[dataSetIndex]));
                     fb.line(x1, y1, x2, y2, lineStroke);
@@ -194,7 +194,7 @@ const updateDisplay = () => {
             });
 
             // increment our y cursor
-            y += height;
+            y += graphHeight;
         }
 
         // Clear the screen buffer
