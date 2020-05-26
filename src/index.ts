@@ -153,8 +153,8 @@ const updateDisplay = () => {
 
             // draw axes
             fb.color(...hexToRgb(COLORS.darkGray));
-            fb.line(0, y, 0, y + graphHeight, lineStroke);
-            fb.line(0, y + graphHeight, width, y + graphHeight, lineStroke);
+            fb.line(hPadding, y, hPadding, y + graphHeight, lineStroke);
+            fb.line(hPadding, y + graphHeight, width - hPadding, y + graphHeight, lineStroke);
 
             // how large is the largest set of data points?
             const maxLength = data.reduce((max, values) => Math.max(max, values.length), -Infinity);
@@ -165,7 +165,7 @@ const updateDisplay = () => {
             const xStep = Math.floor((width - (hPadding * 2)) / (maxLength - 1));
 
             // draw vertical lines for where data points go
-            for (let x = xStep; x < width; x += xStep) {
+            for (let x = hPadding + xStep; x < width; x += xStep) {
                 fb.color(...hexToRgb(COLORS.darkDarkGray));
                 fb.line(x, y, x, y + graphHeight, lineStroke);
             }
