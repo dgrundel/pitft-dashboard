@@ -150,7 +150,7 @@ const updateDisplay = () => {
         const addLineGraph = (data: number[][], labels: string[] = [], totalHeight = 65) => {
             const hPadding = 4;
             const lineStroke = 1;
-            const labelHeight = 14;
+            const labelHeight = 10;
             const graphHeight = totalHeight - (labels.length === 0 ? 0 : labelHeight);
 
             // draw axes
@@ -161,17 +161,21 @@ const updateDisplay = () => {
             //draw labels
             if (labels.length > 0) {
                 const labelXStep = Math.floor((width - (hPadding * 2)) / labels.length);
-                const swatchY = y + graphHeight;
-                const swatchSize = labelHeight;
+                const swatchSize = Math.floor(0.8 * labelHeight);
+                const swatchPadding = Math.floor((labelHeight - swatchSize) / 2);
+                const swatchY = y + graphHeight + swatchPadding;
+                const labelBaseline = y + graphHeight + labelHeight;
                 let x = hPadding;
 
                 labels.forEach((text, labelIndex) => {
                     fb.color(...hexToRgb(GRAPH_COLORS[labelIndex]));
                     fb.rect(x, swatchY, swatchSize, swatchSize);
 
+                    const labelX = x + swatchSize + hPadding;
+
                     fb.color(...hexToRgb(COLORS.lightGray));
                     fb.font(fontFamily, labelHeight);
-                    fb.text(x + swatchSize + hPadding, swatchY + labelHeight, text);
+                    fb.text(labelX, labelBaseline, text);
 
                     x += labelXStep;
                 });
@@ -248,9 +252,6 @@ const updateDisplay = () => {
         // addTextLine(`Disk: ${getDiskUsageStr(diskInfo)}`);
         // addHorizontalGraph(parseFloat(diskInfo.usedPercentage.toString()) / 100);
         
-        const lastStatPoint = cpuStats.data[cpuStats.data.length - 1];
-        addTextLine(`cpuStats: ${cpuStats.data.length}, ${lastStatPoint.time}: ${lastStatPoint.value[0].toFixed(2)}`, 8, COLORS.gold);
-
         const cpuGraphData = cpuStats.data.reduce((all: number[][], point: Datum<CpuLoad>) => {
             all[0].push(point.value[0]);
             all[1].push(point.value[1]);
