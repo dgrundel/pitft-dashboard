@@ -147,9 +147,11 @@ const updateDisplay = () => {
             y += lineHeight;
         }
 
-        const addLineGraph = (data: number[][], graphHeight = 65) => {
+        const addLineGraph = (data: number[][], labels: string[] = [], totalHeight = 65) => {
             const hPadding = 4;
             const lineStroke = 1;
+            const labelHeight = 14;
+            const graphHeight = totalHeight - (labels.length === 0 ? 0 : labelHeight);
 
             // draw axes
             fb.color(...hexToRgb(COLORS.darkGray));
@@ -202,8 +204,27 @@ const updateDisplay = () => {
                 }
             });
 
+            //draw labels
+            if (labels.length > 0) {
+                const labelXStep = Math.floor((width - (hPadding * 2)) / labels.length);
+                const swatchY = y + graphHeight;
+                const swatchSize = labelHeight;
+                let x = hPadding;
+
+                labels.forEach((text, labelIndex) => {
+                    fb.color(...hexToRgb(GRAPH_COLORS[labelIndex]));
+                    fb.rect(x, swatchY, swatchSize, swatchSize);
+
+                    fb.color(...hexToRgb(COLORS.lightGray));
+                    fb.font(fontFamily, labelHeight);
+                    fb.text(x + swatchSize + hPadding, swatchY + labelHeight, text);
+
+                    x += labelXStep;
+                });
+            }
+
             // increment our y cursor
-            y += graphHeight;
+            y += totalHeight;
         }
 
         // Clear the screen buffer
@@ -230,12 +251,13 @@ const updateDisplay = () => {
         const lastStatPoint = cpuStats.data[cpuStats.data.length - 1];
         addTextLine(`cpuStats: ${cpuStats.data.length}, ${lastStatPoint.time}: ${lastStatPoint.value[0].toFixed(2)}`, 8, COLORS.gold);
 
-        addLineGraph(cpuStats.data.reduce((all: number[][], point: Datum<CpuLoad>) => {
+        const cpuGraphData = cpuStats.data.reduce((all: number[][], point: Datum<CpuLoad>) => {
             all[0].push(point.value[0]);
             all[1].push(point.value[1]);
             all[2].push(point.value[2]);
             return all;
-        }, [[], [], []]));
+        }, [[], [], []]);
+        addLineGraph(cpuGraphData, ['1 min', '5 min', '15 min']);
             
         // Transfer the back buffer to the screen buffer
         setTimeout(() => fb.blit(), 20);
