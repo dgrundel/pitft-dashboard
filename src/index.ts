@@ -147,7 +147,7 @@ const updateDisplay = () => {
             y += lineHeight;
         }
 
-        const addLineGraph = (data: number[][], height = 100) => {
+        const addLineGraph = (data: number[][], height = 80) => {
             const hPadding = 4;
             const lineStroke = 1;
 
