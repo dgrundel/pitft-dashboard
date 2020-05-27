@@ -9,8 +9,8 @@ import * as prettyMs from 'pretty-ms';
 
 import { setBacklight, toggleBacklight } from './modules/backlight';
 import { COLORS, hexToRgb, GRAPH_COLORS } from './modules/colors';
-import { cpuStats, CpuLoad } from './modules/stats/cpuStats';
-import { Datum } from './modules/StatData';
+import { cpuStats, CpuLoad } from './modules/stats';
+import { Datum } from './modules/StatCollector';
 import { Renderer } from './modules/Renderer';
 
 const gpioOut = 37;
