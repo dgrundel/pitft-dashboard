@@ -1,19 +1,30 @@
 import { Renderer } from "./Renderer";
-import { COLORS, hexToRgb } from "./colors";
+import { COLORS, hexToRgb, RGBColor } from "./colors";
 
 const DEFAULT_LINE_STROKE = 1;
-const DEFAULT_HSPACING = 4;
+const DEFAULT_HSPACING = 2;
 const DEFAULT_TITLE_HEIGHT = 12;
 const DEFAULT_LABEL_HEIGHT = 10;
 const DEFAULT_FONT_FAMILY = 'roboto';
+const DEFAULT_TITLE_COLOR = COLORS.lightGray;
+const DEFAULT_VLINE_COLOR = COLORS.darkDarkGray;
+const DEFAULT_LABEL_COLOR = COLORS.lightGray;
+const DEFAULT_AXIS_COLOR = COLORS.darkGray;
 
 const GRAPH_COLORS = [
     COLORS.blue,
     COLORS.gold,
     COLORS.green,
     COLORS.red,
-    COLORS.purple
+    COLORS.purple,
+    COLORS.white,
+    COLORS.darkBlue,
+    COLORS.brown,
+    COLORS.darkGreen,
+    COLORS.pink
 ];
+
+const getColor = (n: number): RGBColor => hexToRgb(GRAPH_COLORS[n % GRAPH_COLORS.length]); 
 
 export interface LineGraphOptions {
     width?: number;
@@ -50,7 +61,7 @@ export const lineGraph = (data: number[][], renderer: Renderer, options?: LineGr
 
     // draw title
     if (title) {
-        renderer.color(...hexToRgb(COLORS.lightGray));
+        renderer.color(...hexToRgb(DEFAULT_TITLE_COLOR));
         renderer.font(DEFAULT_FONT_FAMILY, titleHeight);
         renderer.text(offsetX + Math.floor(width / 2), offsetY + Math.floor(titleHeight / 2), title, true /* centered */);
 
@@ -68,12 +79,12 @@ export const lineGraph = (data: number[][], renderer: Renderer, options?: LineGr
         let x = offsetX + hSpacing;
 
         labels.forEach((text, labelIndex) => {
-            renderer.color(...hexToRgb(GRAPH_COLORS[labelIndex]));
+            renderer.color(...getColor(labelIndex));
             renderer.rect(x, swatchY, swatchSize, swatchSize);
 
             const labelX = x + swatchSize + hSpacing;
 
-            renderer.color(...hexToRgb(COLORS.lightGray));
+            renderer.color(...hexToRgb(DEFAULT_LABEL_COLOR));
             renderer.font(DEFAULT_FONT_FAMILY, labelHeight);
             renderer.text(labelX, labelBaseline, text);
 
@@ -82,7 +93,7 @@ export const lineGraph = (data: number[][], renderer: Renderer, options?: LineGr
     }
 
     // draw axes
-    renderer.color(...hexToRgb(COLORS.darkGray));
+    renderer.color(...hexToRgb(DEFAULT_AXIS_COLOR));
     renderer.line(offsetX + hSpacing, offsetY, offsetX + hSpacing, offsetY + graphHeight, lineStroke);
     renderer.line(offsetX + hSpacing, offsetY + graphHeight, offsetX + width - hSpacing, offsetY + graphHeight, lineStroke);
 
@@ -99,7 +110,7 @@ export const lineGraph = (data: number[][], renderer: Renderer, options?: LineGr
 
     // draw vertical lines for where data points go
     for (let x = (offsetX + hSpacing + xStep); x < (offsetX + width); x += xStep) {
-        renderer.color(...hexToRgb(COLORS.darkDarkGray));
+        renderer.color(...hexToRgb(DEFAULT_VLINE_COLOR));
         renderer.line(x, offsetY, x, offsetY + graphHeight, lineStroke);
     }
     
@@ -130,7 +141,7 @@ export const lineGraph = (data: number[][], renderer: Renderer, options?: LineGr
             const x2 = (x += xStep);
             const y2 = calcY(v2);
 
-            renderer.color(...hexToRgb(GRAPH_COLORS[dataSetIndex]));
+            renderer.color(...getColor(dataSetIndex));
             renderer.line(x1, y1, x2, y2, lineStroke);
         }
     });

@@ -8,17 +8,21 @@ import * as prettyBytes from 'pretty-bytes';
 import * as prettyMs from 'pretty-ms';
 
 import { setBacklight, toggleBacklight } from './modules/backlight';
-import { COLORS, hexToRgb, GRAPH_COLORS } from './modules/colors';
-import { cpuStats, CpuLoad } from './modules/stats';
-import { Datum } from './modules/StatCollector';
+import { COLORS, hexToRgb } from './modules/colors';
+import { cpuStats } from './modules/stats';
 import { Renderer } from './modules/Renderer';
 import { lineGraph } from './modules/graph';
 
-const gpioOut = 37;
-const gpioButtons = [33, 35];
+const REFRESH_INTERVAL = 120;
+
+const GPIO_VOUT = 37;
+const GPIO_BUTTON_A = 33;
+const GPIO_BUTTON_B = 35;
+
+const gpioButtons = [GPIO_BUTTON_A, GPIO_BUTTON_B];
 
 gpio.setMode(gpio.MODE_RPI);
-gpio.setup(gpioOut, gpio.DIR_HIGH);
+gpio.setup(GPIO_VOUT, gpio.DIR_HIGH);
 gpioButtons.map(n => gpio.setup(n, gpio.DIR_IN, gpio.EDGE_FALLING, e => { throw e; }));
 
 // Returns a framebuffer in double buffering mode
@@ -157,90 +161,6 @@ const updateDisplay = () => {
             y += lineHeight;
         }
 
-        const addLineGraph = (data: number[][], labels: string[] = [], totalHeight = 65) => {
-            const hPadding = 4;
-            const lineStroke = 1;
-            const labelHeight = 10;
-            const graphHeight = totalHeight - (labels.length === 0 ? 0 : labelHeight);
-
-            // draw axes
-            renderer.color(...hexToRgb(COLORS.darkGray));
-            renderer.line(hPadding, y, hPadding, y + graphHeight, lineStroke);
-            renderer.line(hPadding, y + graphHeight, width - hPadding, y + graphHeight, lineStroke);
-
-            //draw labels
-            if (labels.length > 0) {
-                const labelXStep = Math.floor((width - (hPadding * 2)) / labels.length);
-                const swatchSize = Math.floor(0.8 * labelHeight);
-                const swatchPadding = Math.floor((labelHeight - swatchSize) / 2);
-                const swatchY = y + graphHeight + swatchPadding;
-                const labelBaseline = y + graphHeight + labelHeight;
-                let x = hPadding;
-
-                labels.forEach((text, labelIndex) => {
-                    renderer.color(...hexToRgb(GRAPH_COLORS[labelIndex]));
-                    renderer.rect(x, swatchY, swatchSize, swatchSize);
-
-                    const labelX = x + swatchSize + hPadding;
-
-                    renderer.color(...hexToRgb(COLORS.lightGray));
-                    renderer.font(fontFamily, labelHeight);
-                    renderer.text(labelX, labelBaseline, text);
-
-                    x += labelXStep;
-                });
-            }
-
-            // how large is the largest set of data points?
-            const maxLength = data.reduce((max, values) => Math.max(max, values.length), -Infinity);
-            if (maxLength < 2) {
-                return;
-            }
-            // how far to space points on graph
-            const xStep = Math.floor((width - (hPadding * 2)) / (maxLength - 1));
-
-            // draw vertical lines for where data points go
-            for (let x = hPadding + xStep; x < width; x += xStep) {
-                renderer.color(...hexToRgb(COLORS.darkDarkGray));
-                renderer.line(x, y, x, y + graphHeight, lineStroke);
-            }
-            
-            // calculate upper/lower bounds of all data points
-            const maxValue = data.reduce((max, values) => Math.max(max, ...values), -Infinity);
-            const minValue = data.reduce((min, values) => Math.min(min, ...values), Infinity);
-            const range = maxValue - minValue;
-
-            const calcY = (v: number) => {
-                return y + Math.floor((1 - (Math.abs(v - minValue) / range)) * graphHeight);
-            };
-
-            // x cursor
-            let x = hPadding;
-
-            data.forEach((dataSet, dataSetIndex) => {
-                // reset x cursor
-                x = hPadding;
-                
-                // i starts at 1 to skip first value (we look back at it)
-                for(let i = 1; i < dataSet.length; i++) {
-                    const v1 = dataSet[i -1];
-                    const v2 = dataSet[i];
-
-                    const x1 = x;
-                    const y1 = calcY(v1);
-                    
-                    const x2 = (x += xStep);
-                    const y2 = calcY(v2);
-
-                    renderer.color(...hexToRgb(GRAPH_COLORS[dataSetIndex]));
-                    renderer.line(x1, y1, x2, y2, lineStroke);
-                }
-            });
-
-            // increment our y cursor
-            y += totalHeight;
-        }
-
         // Clear the screen buffer
         renderer.clear();
 
@@ -263,7 +183,7 @@ const updateDisplay = () => {
         // addHorizontalGraph(parseFloat(diskInfo.usedPercentage.toString()) / 100);
         
         const colSplit = Math.floor(width / 2);
-        const graphHeight = 65;
+        const graphHeight = 70;
         
         const cpuGraphData = rowsToCols(cpuStats.data.map(datum => datum.value));
         // addLineGraph(cpuGraphData, ['1 min', '5 min', '15 min']);
@@ -319,14 +239,14 @@ const updateDisplay = () => {
         setTimeout(() => renderer.blit(), 20);
         
         // trigger another update
-        setTimeout(updateDisplay, 120);
+        setTimeout(updateDisplay, REFRESH_INTERVAL);
     });
 };
 
 // turn the backlight on at startup
 setBacklight(true);
 
-onButtonPress(33, () => toggleBacklight());
-// onButtonPress(35, () => gpioMessages.push('35'));
+onButtonPress(GPIO_BUTTON_A, () => toggleBacklight());
+// onButtonPress(GPIO_BUTTON_B, () => console.log('button b, gpio 35'));
 
 updateDisplay();
