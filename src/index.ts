@@ -11,7 +11,7 @@ import { setBacklight, toggleBacklight } from './modules/backlight';
 import { COLORS, hexToRgb, GRAPH_COLORS } from './modules/colors';
 import { cpuStats, CpuLoad } from './modules/stats/cpuStats';
 import { Datum } from './modules/StatData';
-import { Renderer } from './modules/renderer';
+import { Renderer } from './modules/Renderer';
 
 const gpioOut = 37;
 const gpioButtons = [33, 35];
