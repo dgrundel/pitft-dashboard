@@ -51,8 +51,11 @@ export const lineGraph = (data: number[][], renderer: Renderer, options?: LineGr
     // draw title
     if (title) {
         renderer.color(...hexToRgb(COLORS.lightGray));
-        renderer.font(DEFAULT_FONT_FAMILY, labelHeight);
+        renderer.font(DEFAULT_FONT_FAMILY, titleHeight);
         renderer.text(offsetX + Math.floor(width / 2), offsetY + titleHeight, title, true /* centered */);
+
+        // push the rest of the graph down
+        offsetY += titleHeight;
     }
 
     // draw labels
