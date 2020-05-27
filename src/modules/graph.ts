@@ -52,7 +52,7 @@ export const lineGraph = (data: number[][], renderer: Renderer, options?: LineGr
     if (title) {
         renderer.color(...hexToRgb(COLORS.lightGray));
         renderer.font(DEFAULT_FONT_FAMILY, titleHeight);
-        renderer.text(offsetX + Math.floor(width / 2), offsetY + titleHeight, title, true /* centered */);
+        renderer.text(offsetX + Math.floor(width / 2), offsetY + Math.floor(titleHeight / 2), title, true /* centered */);
 
         // push the rest of the graph down
         offsetY += titleHeight;
