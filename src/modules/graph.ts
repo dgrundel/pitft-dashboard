@@ -56,17 +56,19 @@ export const lineGraph = (data: number[][], renderer: Renderer, options?: LineGr
     
     const graphHeight = height - labelHeight - titleHeight;
 
-    let offsetX = options.offsetX || 0;
-    let offsetY = options.offsetY || 0;
+    const offsetX = options.offsetX || 0;
+    const offsetY = options.offsetY || 0;
+
+    let y = offsetY;
 
     // draw title
     if (title) {
         renderer.color(...hexToRgb(DEFAULT_TITLE_COLOR));
         renderer.font(DEFAULT_FONT_FAMILY, titleHeight);
-        renderer.text(offsetX + Math.floor(width / 2), offsetY + Math.floor(titleHeight / 2), title, true /* centered */);
+        renderer.text(offsetX + Math.floor(width / 2), y + Math.floor(titleHeight / 2), title, true /* centered */);
 
         // push the rest of the graph down
-        offsetY += titleHeight;
+        y += titleHeight;
     }
 
     // draw labels
@@ -74,8 +76,8 @@ export const lineGraph = (data: number[][], renderer: Renderer, options?: LineGr
         const labelXStep = Math.floor((width - (hSpacing * 2)) / labels.length);
         const swatchSize = Math.floor(0.8 * labelHeight);
         const swatchPadding = Math.floor((labelHeight - swatchSize) / 2);
-        const swatchY = offsetY + graphHeight + swatchPadding;
-        const labelBaseline = offsetY + graphHeight + labelHeight;
+        const swatchY = y + graphHeight + swatchPadding;
+        const labelBaseline = y + graphHeight + labelHeight;
         let x = offsetX + hSpacing;
 
         labels.forEach((text, labelIndex) => {
@@ -94,8 +96,8 @@ export const lineGraph = (data: number[][], renderer: Renderer, options?: LineGr
 
     // draw axes
     renderer.color(...hexToRgb(DEFAULT_AXIS_COLOR));
-    renderer.line(offsetX + hSpacing, offsetY, offsetX + hSpacing, offsetY + graphHeight, lineStroke);
-    renderer.line(offsetX + hSpacing, offsetY + graphHeight, offsetX + width - hSpacing, offsetY + graphHeight, lineStroke);
+    renderer.line(offsetX + hSpacing, y, offsetX + hSpacing, y + graphHeight, lineStroke);
+    renderer.line(offsetX + hSpacing, y + graphHeight, offsetX + width - hSpacing, y + graphHeight, lineStroke);
 
     // how large is the largest set of data points?
     const maxLength = data.reduce((max, values) => Math.max(max, values.length), -Infinity);
@@ -111,7 +113,7 @@ export const lineGraph = (data: number[][], renderer: Renderer, options?: LineGr
     // draw vertical lines for where data points go
     for (let x = (offsetX + hSpacing + xStep); x < (offsetX + width); x += xStep) {
         renderer.color(...hexToRgb(DEFAULT_VLINE_COLOR));
-        renderer.line(x, offsetY, x, offsetY + graphHeight, lineStroke);
+        renderer.line(x, y, x, y + graphHeight, lineStroke);
     }
     
     // calculate upper/lower bounds of all data points
@@ -120,7 +122,7 @@ export const lineGraph = (data: number[][], renderer: Renderer, options?: LineGr
     const range = maxValue - minValue;
 
     const calcY = (v: number) => {
-        return offsetY + Math.floor((1 - (Math.abs(v - minValue) / range)) * graphHeight);
+        return y + Math.floor((1 - (Math.abs(v - minValue) / range)) * graphHeight);
     };
 
     // x cursor
@@ -145,4 +147,10 @@ export const lineGraph = (data: number[][], renderer: Renderer, options?: LineGr
             renderer.line(x1, y1, x2, y2, lineStroke);
         }
     });
+
+    // labels on graph for min/max value
+    renderer.color(...hexToRgb(DEFAULT_LABEL_COLOR));
+    renderer.font(DEFAULT_FONT_FAMILY, labelHeight);
+    renderer.text(offsetX + width - hSpacing, offsetY + titleHeight + labelHeight, maxValue.toFixed(3), false, 0, true);
+    renderer.text(offsetX + width - hSpacing, offsetY + titleHeight + graphHeight, minValue.toFixed(3), false, 0, true);
 }
