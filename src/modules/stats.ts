@@ -3,6 +3,9 @@ import * as osu from 'node-os-utils';
 
 import { StatCollector } from './StatCollector';
 
+// set refresh interval for OSUtils' workers
+osu.options.INTERVAL = 5000;
+
 /**
  * CPU
  */
