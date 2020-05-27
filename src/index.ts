@@ -267,11 +267,11 @@ const updateDisplay = () => {
         lineGraph(cpuGraphData, renderer, {
             offsetY: y,
             height: 65,
-            title: 'CPU 1/5/15',
+            title: 'CPU Load',
             labels: ['1 min', '5 min', '15 min'],
             horizontalSpacing: 2,
-            titleHeight: 10,
-            labelHeight: 8
+            titleHeight: 12,
+            labelHeight: 10
         });
             
         // Transfer the back buffer to the screen buffer
