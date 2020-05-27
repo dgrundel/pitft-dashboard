@@ -40,7 +40,8 @@ export interface DriveUsage {
     usedPercentage: number;
 }
 export const driveStats = new StatCollector<DriveUsage>(10, 60000, () => osu.drive.info('/')
-    .then(info => Promise.resolve(osu.isNotSupported(info)
+    .then(info => Promise.resolve(
+        osu.isNotSupported(info)
         ? undefined
         : {
             totalGb: parseFloat(info.totalGb as any),
@@ -48,4 +49,37 @@ export const driveStats = new StatCollector<DriveUsage>(10, 60000, () => osu.dri
             freePercentage: parseFloat(info.freePercentage as any),
             usedGb: parseFloat(info.usedGb as any),
             usedPercentage: parseFloat(info.usedPercentage as any)
-        })));
+        }
+    )));
+
+/**
+ * Network Throughput
+ */
+export interface NetworkSpeed {
+    interface: string;
+    inputBytes: number;
+    outputBytes: number;
+}
+export type NetworkSpeedStats = Record<string, StatCollector<NetworkSpeed>>;
+export const networkSpeedStats = Object.keys(os.networkInterfaces())
+    .reduce((map: NetworkSpeedStats, ifName) => {
+        map[ifName] = new StatCollector<NetworkSpeed>(60, 10000, () => osu.netstat.stats()
+            .then(info => {
+                if (osu.isNotSupported(info)) {
+                    return undefined;
+                }
+
+                const ifInfo = info.find(i => i.interface === ifName);
+
+                return Promise.resolve(
+                    ifInfo
+                    ? {
+                        interface: ifName,
+                        inputBytes: parseFloat(ifInfo.inputBytes),
+                        outputBytes: parseFloat(ifInfo.outputBytes)
+                    }
+                    : undefined
+                );
+            }));
+        return map;
+    }, {});
