@@ -9,11 +9,11 @@ import * as prettyMs from 'pretty-ms';
 
 import { setBacklight, toggleBacklight } from './modules/backlight';
 import { COLORS, hexToRgb } from './modules/colors';
-import { cpuStats } from './modules/stats';
+import { cpuStats, networkSpeedStats } from './modules/stats';
 import { Renderer } from './modules/Renderer';
 import { lineGraph } from './modules/graph';
 
-const REFRESH_INTERVAL = 120;
+const REFRESH_INTERVAL = 250; //ms
 
 const GPIO_VOUT = 37;
 const GPIO_BUTTON_A = 33;
@@ -186,7 +186,6 @@ const updateDisplay = () => {
         const graphHeight = 70;
         
         const cpuGraphData = rowsToCols(cpuStats.data.map(datum => datum.value));
-        // addLineGraph(cpuGraphData, ['1 min', '5 min', '15 min']);
         lineGraph(cpuGraphData, renderer, {
             offsetY: y,
             height: graphHeight,
@@ -198,13 +197,33 @@ const updateDisplay = () => {
             labelHeight: 10
         });
 
-        lineGraph(cpuGraphData, renderer, {
+        const networkSpeedData = Object.values(networkSpeedStats)
+            .map(collector => collector.data.map(datum => datum.value))
+            .reduce((all: number[][], stats) => {
+                const inputBytes = stats.map(stat => stat.inputBytes);
+                all.push(inputBytes);
+                const outputBytes = stats.map(stat => stat.outputBytes);
+                all.push(outputBytes);
+                return all;
+            }, []);
+
+        const networkSpeedLabels = Object.keys(networkSpeedStats).reduce((labels: string[], ifname) => {
+            labels.concat(`${ifname}: in`, `${ifname}: out`);
+            return labels;
+        }, []);
+
+        // if: in
+        // if: out
+        // if: in
+        // if: out
+            
+        lineGraph(networkSpeedData, renderer, {
             offsetY: y,
             offsetX: colSplit + 1,
             height: graphHeight,
             width: colSplit,
-            title: 'CPU Load',
-            labels: ['1 min', '5 min', '15 min'],
+            title: 'Network Speeds',
+            labels: networkSpeedLabels,
             horizontalSpacing: 2,
             titleHeight: 12,
             labelHeight: 10
