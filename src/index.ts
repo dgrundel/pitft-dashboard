@@ -12,6 +12,7 @@ import { COLORS, hexToRgb, GRAPH_COLORS } from './modules/colors';
 import { cpuStats, CpuLoad } from './modules/stats';
 import { Datum } from './modules/StatCollector';
 import { Renderer } from './modules/Renderer';
+import { lineGraph } from './modules/graph';
 
 const gpioOut = 37;
 const gpioButtons = [33, 35];
@@ -262,7 +263,16 @@ const updateDisplay = () => {
         // addHorizontalGraph(parseFloat(diskInfo.usedPercentage.toString()) / 100);
         
         const cpuGraphData = rowsToCols(cpuStats.data.map(datum => datum.value));
-        addLineGraph(cpuGraphData, ['1 min', '5 min', '15 min']);
+        // addLineGraph(cpuGraphData, ['1 min', '5 min', '15 min']);
+        lineGraph(cpuGraphData, renderer, {
+            offsetY: y,
+            height: 65,
+            title: 'CPU 1/5/15',
+            labels: ['1 min', '5 min', '15 min'],
+            horizontalSpacing: 2,
+            titleHeight: 10,
+            labelHeight: 8
+        });
             
         // Transfer the back buffer to the screen buffer
         setTimeout(() => renderer.blit(), 20);
