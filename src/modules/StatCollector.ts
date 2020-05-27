@@ -12,7 +12,7 @@ export class StatCollector<T> {
     data: Datum<T>[] = [];
     maxItems: number;
     interval: number;
-    retriever: () => T;
+    retriever: () => Promise<T>;
 
     constructor(maxItems: number, interval: number, retriever: () => Promise<T>) {
         this.maxItems = maxItems;
