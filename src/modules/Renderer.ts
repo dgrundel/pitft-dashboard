@@ -50,7 +50,20 @@ export class Renderer implements pitft.FrameBuffer {
     patternCreateLinear(x0: number, y0: number, x1: number, y2: number): number;
     patternCreateLinear(patternID: number, x0: number, y0: number, x1: number, y2: number): number;
     patternCreateLinear(patternID: any, x0: any, y0: any, x1: any, y2?: any) {
-        return this.fb.patternCreateLinear.apply(this.fb, arguments);
+        return arguments.length === 4
+            ? this.fb.patternCreateLinear.apply(this.fb, [
+                arguments[0] + this.offsetX,
+                arguments[1] + this.offsetY,
+                arguments[2] + this.offsetX,
+                arguments[3] + this.offsetY
+            ])
+            : this.fb.patternCreateLinear.apply(this.fb, [
+                arguments[0],
+                arguments[1] + this.offsetX,
+                arguments[2] + this.offsetY,
+                arguments[3] + this.offsetX,
+                arguments[4] + this.offsetY
+            ]);
     }
 
     patternCreateRGB(r: number, g: number, b: number, a?: number): number;
@@ -72,15 +85,34 @@ export class Renderer implements pitft.FrameBuffer {
     }
 
     line(x0: number, y0: number, x1: number, y1: number, width?: number): void {
-        this.fb.line.apply(this.fb, arguments);
+        this.fb.line.apply(this.fb, [
+            arguments[0] + this.offsetX,
+            arguments[1] + this.offsetY,
+            arguments[2] + this.offsetX,
+            arguments[3] + this.offsetY,
+            arguments[4]
+        ]);
     }
 
     rect(x: number, y: number, width: number, height: number, outline?: boolean, borderWidth?: number): void {
-        this.fb.rect.apply(this.fb, arguments);
+        this.fb.rect.apply(this.fb, [
+            arguments[0] + this.offsetX,
+            arguments[1] + this.offsetY,
+            arguments[2],
+            arguments[3],
+            arguments[4],
+            arguments[5]
+        ]);
     }
 
     circle(x: number, y: number, radius: number, outline?: boolean, borderWidth?: boolean): void {
-        this.fb.circle.apply(this.fb, arguments);
+        this.fb.circle.apply(this.fb, [
+            arguments[0] + this.offsetX,
+            arguments[1] + this.offsetY,
+            arguments[2],
+            arguments[3],
+            arguments[4]
+        ]);
     }
 
     font(fontName: string, fontSize: number, fontBold?: boolean): void {
@@ -88,10 +120,21 @@ export class Renderer implements pitft.FrameBuffer {
     }
 
     text(x: number, y: number, text: string, centered?: boolean, rotation?: number, right?: boolean): void {
-        this.fb.text.apply(this.fb, arguments);
+        this.fb.text.apply(this.fb, [
+            arguments[0] + this.offsetX,
+            arguments[1] + this.offsetY,
+            arguments[2],
+            arguments[3],
+            arguments[4],
+            arguments[5]
+        ]);
     }
 
     image(x: number, y: number, path: string): void {
-        this.fb.image.apply(this.fb, arguments);
+        this.fb.image.apply(this.fb, [
+            arguments[0] + this.offsetX,
+            arguments[1] + this.offsetY,
+            arguments[2]
+        ]);
     }
 }
