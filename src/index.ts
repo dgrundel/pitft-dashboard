@@ -11,6 +11,7 @@ import { setBacklight, toggleBacklight } from './modules/backlight';
 import { COLORS, hexToRgb, GRAPH_COLORS } from './modules/colors';
 import { cpuStats, CpuLoad } from './modules/stats/cpuStats';
 import { Datum } from './modules/StatData';
+import { Renderer } from './modules/renderer';
 
 const gpioOut = 37;
 const gpioButtons = [33, 35];
@@ -20,16 +21,18 @@ gpio.setup(gpioOut, gpio.DIR_HIGH);
 gpioButtons.map(n => gpio.setup(n, gpio.DIR_IN, gpio.EDGE_FALLING, e => { throw e; }));
 
 // Returns a framebuffer in double buffering mode
-const fb = pitft("/dev/fb1", true);
+const renderer = new Renderer(pitft("/dev/fb1", true));
 
 // Clear the screen buffer
-fb.clear();
+renderer.clear();
 
-const width = fb.size().width; // 320
-const height = fb.size().height; // 240
+const width = renderer.size().width; // 320
+const height = renderer.size().height; // 240
 const fontFamily = 'roboto';
 const defaultFontSize = 18;
 const defaultLineHeight = 22;
+
+
 
 const onButtonPress = (id: number, callback: () => void) => {
     gpio.on('change', function(channel, value) {
@@ -107,9 +110,9 @@ const updateDisplay = () => {
             // place baseline of text with padding
             const baseline = y + lineHeight - padding;
             
-            fb.color(...hexToRgb(textColor));
-            fb.font(fontFamily, fontSize);
-            fb.text(0, baseline, s, false, 0);
+            renderer.color(...hexToRgb(textColor));
+            renderer.font(fontFamily, fontSize);
+            renderer.text(0, baseline, s, false, 0);
             
             // increment our y cursor
             y += lineHeight;
@@ -120,8 +123,8 @@ const updateDisplay = () => {
             
             y += padding;
             
-            fb.color(...divderColor);
-            fb.line(0, y, width, y, lineStroke);
+            renderer.color(...divderColor);
+            renderer.line(0, y, width, y, lineStroke);
 
             y += lineStroke + padding;
         };
@@ -136,12 +139,12 @@ const updateDisplay = () => {
             }
 
             // draw a rectangle the full width of the screen and full line height
-            fb.color(...hexToRgb(COLORS.lightGray));
-            fb.rect(0, y, width, lineHeight);
+            renderer.color(...hexToRgb(COLORS.lightGray));
+            renderer.rect(0, y, width, lineHeight);
 
             // draw the bar at the height of the text and pad all four sides
-            fb.color(...hexToRgb(barColor));
-            fb.rect(padding, y + padding, Math.ceil(pct * (width - padding)), fontSize);
+            renderer.color(...hexToRgb(barColor));
+            renderer.rect(padding, y + padding, Math.ceil(pct * (width - padding)), fontSize);
 
             // increment our y cursor
             y += lineHeight;
@@ -154,9 +157,9 @@ const updateDisplay = () => {
             const graphHeight = totalHeight - (labels.length === 0 ? 0 : labelHeight);
 
             // draw axes
-            fb.color(...hexToRgb(COLORS.darkGray));
-            fb.line(hPadding, y, hPadding, y + graphHeight, lineStroke);
-            fb.line(hPadding, y + graphHeight, width - hPadding, y + graphHeight, lineStroke);
+            renderer.color(...hexToRgb(COLORS.darkGray));
+            renderer.line(hPadding, y, hPadding, y + graphHeight, lineStroke);
+            renderer.line(hPadding, y + graphHeight, width - hPadding, y + graphHeight, lineStroke);
 
             //draw labels
             if (labels.length > 0) {
@@ -168,14 +171,14 @@ const updateDisplay = () => {
                 let x = hPadding;
 
                 labels.forEach((text, labelIndex) => {
-                    fb.color(...hexToRgb(GRAPH_COLORS[labelIndex]));
-                    fb.rect(x, swatchY, swatchSize, swatchSize);
+                    renderer.color(...hexToRgb(GRAPH_COLORS[labelIndex]));
+                    renderer.rect(x, swatchY, swatchSize, swatchSize);
 
                     const labelX = x + swatchSize + hPadding;
 
-                    fb.color(...hexToRgb(COLORS.lightGray));
-                    fb.font(fontFamily, labelHeight);
-                    fb.text(labelX, labelBaseline, text);
+                    renderer.color(...hexToRgb(COLORS.lightGray));
+                    renderer.font(fontFamily, labelHeight);
+                    renderer.text(labelX, labelBaseline, text);
 
                     x += labelXStep;
                 });
@@ -191,8 +194,8 @@ const updateDisplay = () => {
 
             // draw vertical lines for where data points go
             for (let x = hPadding + xStep; x < width; x += xStep) {
-                fb.color(...hexToRgb(COLORS.darkDarkGray));
-                fb.line(x, y, x, y + graphHeight, lineStroke);
+                renderer.color(...hexToRgb(COLORS.darkDarkGray));
+                renderer.line(x, y, x, y + graphHeight, lineStroke);
             }
             
             // calculate upper/lower bounds of all data points
@@ -222,8 +225,8 @@ const updateDisplay = () => {
                     const x2 = (x += xStep);
                     const y2 = calcY(v2);
 
-                    fb.color(...hexToRgb(GRAPH_COLORS[dataSetIndex]));
-                    fb.line(x1, y1, x2, y2, lineStroke);
+                    renderer.color(...hexToRgb(GRAPH_COLORS[dataSetIndex]));
+                    renderer.line(x1, y1, x2, y2, lineStroke);
                 }
             });
 
@@ -232,7 +235,7 @@ const updateDisplay = () => {
         }
 
         // Clear the screen buffer
-        fb.clear();
+        renderer.clear();
 
         // Draw the text non-centered, non-rotated, left (omitted arg)
         addTextLine(getDateString(), 24, COLORS.blue);
@@ -261,7 +264,7 @@ const updateDisplay = () => {
         addLineGraph(cpuGraphData, ['1 min', '5 min', '15 min']);
             
         // Transfer the back buffer to the screen buffer
-        setTimeout(() => fb.blit(), 20);
+        setTimeout(() => renderer.blit(), 20);
         
         // trigger another update
         setTimeout(updateDisplay, 120);
