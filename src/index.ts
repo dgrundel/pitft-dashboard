@@ -44,6 +44,14 @@ const onButtonPress = (id: number, callback: () => void) => {
 
 const pad = (n: number) => (n < 10 ? '0' : '') + n;
 
+const rowsToCols = (data: number[][]): number[][] => data
+    .reduce((output: number[][], values: number[]) => values
+        .reduce((output, value, i) => {
+            output[i] = (output[i] || []);
+            output[i].push(value);
+            return output;
+        }, output), []);
+
 const getIpAddresses = () => Object.values(os.networkInterfaces())
     .reduce((ips: string[], ifaces: os.NetworkInterfaceInfo[]) => ips.concat(
             ifaces.filter(iface => iface.family === 'IPv4' && iface.internal === false)
@@ -255,12 +263,7 @@ const updateDisplay = () => {
         // addTextLine(`Disk: ${getDiskUsageStr(diskInfo)}`);
         // addHorizontalGraph(parseFloat(diskInfo.usedPercentage.toString()) / 100);
         
-        const cpuGraphData = cpuStats.data.reduce((all: number[][], point: Datum<CpuLoad>) => {
-            all[0].push(point.value[0]);
-            all[1].push(point.value[1]);
-            all[2].push(point.value[2]);
-            return all;
-        }, [[], [], []]);
+        const cpuGraphData = rowsToCols(cpuStats.data.map(datum => datum.value));
         addLineGraph(cpuGraphData, ['1 min', '5 min', '15 min']);
             
         // Transfer the back buffer to the screen buffer
