@@ -24,7 +24,7 @@ const GRAPH_COLORS = [
     COLORS.pink
 ];
 
-const getColor = (n: number): RGBColor => hexToRgb(GRAPH_COLORS[n % GRAPH_COLORS.length]); 
+const getGraphColor = (n: number): RGBColor => hexToRgb(GRAPH_COLORS[n % GRAPH_COLORS.length]); 
 
 export interface LineGraphOptions {
     width?: number;
@@ -79,7 +79,7 @@ export const lineGraph = (data: number[][], renderer: Renderer, options?: LineGr
         let x = offsetX + hSpacing;
 
         labels.forEach((text, labelIndex) => {
-            renderer.color(...getColor(labelIndex));
+            renderer.color(...getGraphColor(labelIndex));
             renderer.rect(x, swatchY, swatchSize, swatchSize);
 
             const labelX = x + swatchSize + hSpacing;
@@ -141,7 +141,7 @@ export const lineGraph = (data: number[][], renderer: Renderer, options?: LineGr
             const x2 = (x += xStep);
             const y2 = calcY(v2);
 
-            renderer.color(...getColor(dataSetIndex));
+            renderer.color(...getGraphColor(dataSetIndex));
             renderer.line(x1, y1, x2, y2, lineStroke);
         }
     });
