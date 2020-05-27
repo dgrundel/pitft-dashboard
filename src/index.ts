@@ -262,11 +262,52 @@ const updateDisplay = () => {
         // addTextLine(`Disk: ${getDiskUsageStr(diskInfo)}`);
         // addHorizontalGraph(parseFloat(diskInfo.usedPercentage.toString()) / 100);
         
+        const colSplit = Math.floor(width / 2);
+        const graphHeight = 65;
+        
         const cpuGraphData = rowsToCols(cpuStats.data.map(datum => datum.value));
         // addLineGraph(cpuGraphData, ['1 min', '5 min', '15 min']);
         lineGraph(cpuGraphData, renderer, {
             offsetY: y,
-            height: 65,
+            height: graphHeight,
+            width: colSplit,
+            title: 'CPU Load',
+            labels: ['1 min', '5 min', '15 min'],
+            horizontalSpacing: 2,
+            titleHeight: 12,
+            labelHeight: 10
+        });
+
+        lineGraph(cpuGraphData, renderer, {
+            offsetY: y,
+            offsetX: colSplit + 1,
+            height: graphHeight,
+            width: colSplit,
+            title: 'CPU Load',
+            labels: ['1 min', '5 min', '15 min'],
+            horizontalSpacing: 2,
+            titleHeight: 12,
+            labelHeight: 10
+        });
+
+        y += graphHeight;
+
+        lineGraph(cpuGraphData, renderer, {
+            offsetY: y,
+            height: graphHeight,
+            width: colSplit,
+            title: 'CPU Load',
+            labels: ['1 min', '5 min', '15 min'],
+            horizontalSpacing: 2,
+            titleHeight: 12,
+            labelHeight: 10
+        });
+
+        lineGraph(cpuGraphData, renderer, {
+            offsetY: y,
+            offsetX: colSplit + 1,
+            height: graphHeight,
+            width: colSplit,
             title: 'CPU Load',
             labels: ['1 min', '5 min', '15 min'],
             horizontalSpacing: 2,
