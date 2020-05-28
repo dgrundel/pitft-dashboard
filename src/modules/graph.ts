@@ -26,6 +26,11 @@ const GRAPH_COLORS = [
 
 const getGraphColor = (n: number): RGBColor => hexToRgb(GRAPH_COLORS[n % GRAPH_COLORS.length]); 
 
+export interface GraphDataSet {
+    label?: string;
+    values: number[];
+}
+
 export interface LineGraphOptions {
     width?: number;
     height?: number;
@@ -37,11 +42,12 @@ export interface LineGraphOptions {
 
     title?: string;
     titleHeight?: number;
-    labels?: string[];
     labelHeight?: number;
 };
 
-export const lineGraph = (data: number[][], renderer: Renderer, options?: LineGraphOptions) => {
+export const lineGraph = (dataSets: GraphDataSet[], renderer: Renderer, options?: LineGraphOptions) => {
+    const dataSetValues = dataSets.map(dataSet => dataSet.values);
+    
     const width = options.width || renderer.size().width;
     const height = options.height || renderer.size().height;
     
@@ -51,7 +57,7 @@ export const lineGraph = (data: number[][], renderer: Renderer, options?: LineGr
     const title = options.title;
     const titleHeight = title ? (options.titleHeight || DEFAULT_TITLE_HEIGHT) : 0;
     
-    const labels = options.labels || [];
+    const labels = dataSets.map(dataSet => dataSet.label).filter(label => !!label);
     const labelHeight = labels.length !== 0 ? (options.labelHeight || DEFAULT_LABEL_HEIGHT) : 0;
     
     const graphHeight = height - labelHeight - titleHeight;
@@ -100,7 +106,7 @@ export const lineGraph = (data: number[][], renderer: Renderer, options?: LineGr
     renderer.line(offsetX + hSpacing, y + graphHeight, offsetX + width - hSpacing, y + graphHeight, lineStroke);
 
     // how large is the largest set of data points?
-    const maxLength = data.reduce((max, values) => Math.max(max, values.length), -Infinity);
+    const maxLength = dataSetValues.reduce((max, values) => Math.max(max, values.length), -Infinity);
     
     // if we don't have more than 2 data points, we can't draw any lines.
     if (maxLength < 2) {
@@ -117,8 +123,8 @@ export const lineGraph = (data: number[][], renderer: Renderer, options?: LineGr
     }
     
     // calculate upper/lower bounds of all data points
-    const maxValue = data.reduce((max, values) => Math.max(max, ...values), -Infinity);
-    const minValue = data.reduce((min, values) => Math.min(min, ...values), Infinity);
+    const maxValue = dataSetValues.reduce((max, values) => Math.max(max, ...values), -Infinity);
+    const minValue = dataSetValues.reduce((min, values) => Math.min(min, ...values), Infinity);
     const range = maxValue - minValue;
 
     const calcY = (v: number) => {
@@ -128,14 +134,15 @@ export const lineGraph = (data: number[][], renderer: Renderer, options?: LineGr
     // x cursor
     let x = offsetX + hSpacing;
 
-    data.forEach((dataSet, dataSetIndex) => {
+    dataSets.forEach((dataSet, dataSetIndex) => {
+        const values = dataSet.values;
         // reset x cursor
         x = offsetX + hSpacing;
         
         // i starts at 1 to skip first value (we look back at it)
-        for(let i = 1; i < dataSet.length; i++) {
-            const v1 = dataSet[i -1];
-            const v2 = dataSet[i];
+        for(let i = 1; i < values.length; i++) {
+            const v1 = values[i -1];
+            const v2 = values[i];
 
             const x1 = x;
             const y1 = calcY(v1);

@@ -11,7 +11,7 @@ import { setBacklight, toggleBacklight } from './modules/backlight';
 import { COLORS, hexToRgb } from './modules/colors';
 import { cpuStats, networkSpeedStats } from './modules/stats';
 import { Renderer } from './modules/Renderer';
-import { lineGraph } from './modules/graph';
+import { GraphDataSet, lineGraph } from './modules/graph';
 
 const REFRESH_INTERVAL = 250; //ms
 
@@ -46,14 +46,6 @@ const onButtonPress = (id: number, callback: () => void) => {
 };
 
 const pad = (n: number) => (n < 10 ? '0' : '') + n;
-
-const rowsToCols = (data: number[][]): number[][] => data
-    .reduce((output: number[][], values: number[]) => values
-        .reduce((output, value, i) => {
-            output[i] = (output[i] || []);
-            output[i].push(value);
-            return output;
-        }, output), []);
 
 const getIpAddresses = () => Object.values(os.networkInterfaces())
     .reduce((ips: string[], ifaces: os.NetworkInterfaceInfo[]) => ips.concat(
@@ -185,45 +177,46 @@ const updateDisplay = () => {
         const colSplit = Math.floor(width / 2);
         const graphHeight = 70;
         
-        const cpuGraphData = rowsToCols(cpuStats.data.map(datum => datum.value));
-        lineGraph(cpuGraphData, renderer, {
+        const cpuGraphDataSets: GraphDataSet[] = [
+            {
+                label: '1 min',
+                values: cpuStats.data.map(datum => datum.value[0])
+            },{
+                label: '5 min',
+                values: cpuStats.data.map(datum => datum.value[1])
+            },{
+                label: '15 min',
+                values: cpuStats.data.map(datum => datum.value[2])
+            }
+        ];
+        lineGraph(cpuGraphDataSets, renderer, {
             offsetY: y,
             height: graphHeight,
             width: colSplit,
             title: 'CPU Load',
-            labels: ['1 min', '5 min', '15 min'],
             horizontalSpacing: 2,
             titleHeight: 12,
             labelHeight: 10
         });
 
-        const networkSpeedData = Object.values(networkSpeedStats)
-            .map(collector => collector.data.map(datum => datum.value))
-            .reduce((all: number[][], stats) => {
-                const inputBytes = stats.map(stat => stat.inputBytes);
-                all.push(inputBytes);
-                const outputBytes = stats.map(stat => stat.outputBytes);
-                all.push(outputBytes);
-                return all;
-            }, []);
-
-        const networkSpeedLabels = Object.keys(networkSpeedStats).reduce((labels: string[], ifname) => {
-            labels.concat(`${ifname}: in`, `${ifname}: out`);
-            return labels;
+        const networkSpeedDataSets = Object.keys(networkSpeedStats).reduce((graphData: GraphDataSet[], ifname) => {
+            graphData.push({
+                label: `${ifname}: in`,
+                values: networkSpeedStats[ifname].data.map(datum => datum.value.inputBytes)
+            });
+            graphData.push({
+                label: `${ifname}: out`,
+                values: networkSpeedStats[ifname].data.map(datum => datum.value.outputBytes)
+            });
+            return graphData;
         }, []);
-
-        // if: in
-        // if: out
-        // if: in
-        // if: out
             
-        lineGraph(networkSpeedData, renderer, {
+        lineGraph(networkSpeedDataSets, renderer, {
             offsetY: y,
             offsetX: colSplit + 1,
             height: graphHeight,
             width: colSplit,
             title: 'Network Speeds',
-            labels: networkSpeedLabels,
             horizontalSpacing: 2,
             titleHeight: 12,
             labelHeight: 10
@@ -231,24 +224,22 @@ const updateDisplay = () => {
 
         y += graphHeight;
 
-        lineGraph(cpuGraphData, renderer, {
+        lineGraph(cpuGraphDataSets, renderer, {
             offsetY: y,
             height: graphHeight,
             width: colSplit,
             title: 'CPU Load',
-            labels: ['1 min', '5 min', '15 min'],
             horizontalSpacing: 2,
             titleHeight: 12,
             labelHeight: 10
         });
 
-        lineGraph(cpuGraphData, renderer, {
+        lineGraph(cpuGraphDataSets, renderer, {
             offsetY: y,
             offsetX: colSplit + 1,
             height: graphHeight,
             width: colSplit,
             title: 'CPU Load',
-            labels: ['1 min', '5 min', '15 min'],
             horizontalSpacing: 2,
             titleHeight: 12,
             labelHeight: 10
