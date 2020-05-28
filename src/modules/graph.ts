@@ -46,10 +46,12 @@ export interface LineGraphOptions {
     title?: string;
     titleHeight?: number;
     labelHeight?: number;
+
+    valueDisplayFormatter?: (n: number) => string;
 };
 
 export const lineGraph = (dataSets: GraphDataSet[], renderer: Renderer, options?: LineGraphOptions) => {
-    const dataSetValues = dataSets.map(dataSet => dataSet.values);
+    const dataSetValues: number[][] = dataSets.map(dataSet => dataSet.values);
     
     const width = options.width || renderer.size().width;
     const height = options.height || renderer.size().height;
@@ -63,6 +65,8 @@ export const lineGraph = (dataSets: GraphDataSet[], renderer: Renderer, options?
     const labels = dataSets.map(dataSet => dataSet.label);
     const hasLabels = !!labels.find(s => !!s);
     const labelHeight = hasLabels ? (options.labelHeight || DEFAULT_LABEL_HEIGHT) : 0;
+
+    const valueDisplayFormatter = options.valueDisplayFormatter || (n => n.toFixed(2));
     
     const graphHeight = height - labelHeight - titleHeight;
 
@@ -147,6 +151,12 @@ export const lineGraph = (dataSets: GraphDataSet[], renderer: Renderer, options?
 
     dataSets.forEach((dataSet, dataSetIndex) => {
         const values = dataSet.values;
+
+        // skip data sets with less than two data points
+        if (values.length < 2) {
+            return;
+        }
+
         // reset x cursor
         x = offsetX + hSpacing;
         
@@ -169,6 +179,6 @@ export const lineGraph = (dataSets: GraphDataSet[], renderer: Renderer, options?
     // labels on graph for min/max value
     renderer.color(...hexToRgb(DEFAULT_LABEL_COLOR));
     renderer.font(DEFAULT_FONT_FAMILY, labelHeight);
-    renderer.text(offsetX + width - hSpacing, offsetY + titleHeight + labelHeight, maxValue.toFixed(3), false, 0, true);
-    renderer.text(offsetX + width - hSpacing, offsetY + titleHeight + graphHeight, minValue.toFixed(3), false, 0, true);
+    renderer.text(offsetX + width - hSpacing, offsetY + titleHeight + labelHeight, valueDisplayFormatter(maxValue), false, 0, true);
+    renderer.text(offsetX + width - hSpacing, offsetY + titleHeight + graphHeight, valueDisplayFormatter(minValue), false, 0, true);
 }

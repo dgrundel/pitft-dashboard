@@ -220,7 +220,8 @@ const updateDisplay = () => {
             title: 'Network Speeds',
             horizontalSpacing: 2,
             titleHeight: 12,
-            labelHeight: 10
+            labelHeight: 10,
+            valueDisplayFormatter: n => prettyBytes(n)
         });
 
         // end of row, move cursor down
@@ -239,7 +240,8 @@ const updateDisplay = () => {
             titleHeight: 12,
             labelHeight: 10,
             lowerBound: 0,
-            upperBound: 100
+            upperBound: 100,
+            valueDisplayFormatter: n => `${n.toFixed(2)}%`
         });
 
         const memoryUsageDataSets = [{
@@ -256,7 +258,8 @@ const updateDisplay = () => {
             titleHeight: 12,
             labelHeight: 10,
             lowerBound: 0,
-            upperBound: 100
+            upperBound: 100,
+            valueDisplayFormatter: n => `${n.toFixed(2)}%`
         });
             
         // Transfer the back buffer to the screen buffer

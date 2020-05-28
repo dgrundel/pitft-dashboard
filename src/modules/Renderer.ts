@@ -22,6 +22,10 @@ export class Renderer implements pitft.FrameBuffer {
         this.height = options.height || fb.size().height;
     }
 
+    offset(options?: RendererOptions) {
+        return new Renderer(this, options);
+    }
+
     size(): { width: number; height: number; } {
         return { 
             width: this.width, 
