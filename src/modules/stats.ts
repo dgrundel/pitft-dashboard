@@ -18,7 +18,9 @@ export const cpuStats = new StatCollector<CpuLoad>(40, 15000, () => Promise.reso
 export interface MemoryUsage {
     totalBytes: number;
     freeBytes: number;
+    freePercentage: number;
     usedBytes: number;
+    usedPercentage: number;
 }
 export const memoryStats = new StatCollector<MemoryUsage>(40, 15000, () => {
     const free = os.freemem(); // bytes
@@ -28,7 +30,9 @@ export const memoryStats = new StatCollector<MemoryUsage>(40, 15000, () => {
     return Promise.resolve({
         totalBytes: total,
         freeBytes: free,
-        usedBytes: used
+        freePercentage: free / total * 100,
+        usedBytes: used,
+        usedPercentage: used / total * 100
     });
 })
 
@@ -69,17 +73,19 @@ export const networkSpeedStats = Object.keys(os.networkInterfaces())
         map[ifName] = new StatCollector<NetworkSpeed>(60, 10000, () => osu.netstat.stats()
             .then(info => {
                 if (osu.isNotSupported(info)) {
-                    return undefined;
+                    return Promise.resolve(undefined);
                 }
 
                 const ifInfo = info.find(i => i.interface === ifName);
-
+                const inputBytes = ifInfo && parseFloat(ifInfo.inputBytes);
+                const outputBytes = ifInfo && parseFloat(ifInfo.outputBytes);
+                
                 return Promise.resolve(
-                    ifInfo
+                    inputBytes && outputBytes
                     ? {
                         interface: ifName,
-                        inputBytes: parseFloat(ifInfo.inputBytes),
-                        outputBytes: parseFloat(ifInfo.outputBytes)
+                        inputBytes: inputBytes,
+                        outputBytes: outputBytes
                     }
                     : undefined
                 );

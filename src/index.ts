@@ -198,14 +198,17 @@ const updateDisplay = () => {
         });
 
         const networkSpeedDataSets = Object.keys(networkSpeedStats).reduce((graphData: GraphDataSet[], ifname) => {
-            graphData.push({
-                label: `${ifname}: in`,
-                values: networkSpeedStats[ifname].data.map(datum => datum.value.inputBytes)
-            });
-            graphData.push({
-                label: `${ifname}: out`,
-                values: networkSpeedStats[ifname].data.map(datum => datum.value.outputBytes)
-            });
+            const statData = networkSpeedStats[ifname].data;
+            if (statData.length > 0) {
+                graphData.push({
+                    label: `${ifname}: in`,
+                    values: statData.map(datum => datum.value.inputBytes)
+                });
+                graphData.push({
+                    label: `${ifname}: out`,
+                    values: statData.map(datum => datum.value.outputBytes)
+                });
+            }
             return graphData;
         }, []);
             
@@ -224,14 +227,8 @@ const updateDisplay = () => {
         y += graphHeight;
 
         const diskUsageDataSets = [{
-            label: 'Used Gb',
-            values: driveStats.data.map(datum => datum.value.usedGb)
-        }, {
-            label: 'Free Gb',
-            values: driveStats.data.map(datum => datum.value.freeGb)
-        }, {
-            label: 'Total Gb',
-            values: driveStats.data.map(datum => datum.value.totalGb)
+            label: 'Used Percentage',
+            values: driveStats.data.map(datum => datum.value.usedPercentage)
         }]
         lineGraph(diskUsageDataSets, renderer, {
             offsetY: y,
@@ -240,18 +237,14 @@ const updateDisplay = () => {
             title: 'Disk Usage',
             horizontalSpacing: 2,
             titleHeight: 12,
-            labelHeight: 10
+            labelHeight: 10,
+            lowerBound: 0,
+            upperBound: 100
         });
 
         const memoryUsageDataSets = [{
-            label: 'Used Bytes',
-            values: memoryStats.data.map(datum => datum.value.usedBytes)
-        }, {
-            label: 'Free Bytes',
-            values: memoryStats.data.map(datum => datum.value.freeBytes)
-        }, {
-            label: 'Total Bytes',
-            values: memoryStats.data.map(datum => datum.value.totalBytes)
+            label: 'Used Percentage',
+            values: memoryStats.data.map(datum => datum.value.usedPercentage)
         }]
         lineGraph(memoryUsageDataSets, renderer, {
             offsetY: y,
@@ -261,7 +254,9 @@ const updateDisplay = () => {
             title: 'Memory Usage',
             horizontalSpacing: 2,
             titleHeight: 12,
-            labelHeight: 10
+            labelHeight: 10,
+            lowerBound: 0,
+            upperBound: 100
         });
             
         // Transfer the back buffer to the screen buffer

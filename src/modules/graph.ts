@@ -36,6 +36,9 @@ export interface LineGraphOptions {
     height?: number;
     offsetX?: number;
     offsetY?: number;
+
+    upperBound?: number;
+    lowerBound?: number;
     
     lineStroke?: number;
     horizontalSpacing?: number;
@@ -62,6 +65,9 @@ export const lineGraph = (dataSets: GraphDataSet[], renderer: Renderer, options?
     const labelHeight = hasLabels ? (options.labelHeight || DEFAULT_LABEL_HEIGHT) : 0;
     
     const graphHeight = height - labelHeight - titleHeight;
+
+    const upperBound = options.upperBound || -Infinity;
+    const lowerBound = options.lowerBound || Infinity;
 
     const offsetX = options.offsetX || 0;
     const offsetY = options.offsetY || 0;
@@ -128,8 +134,8 @@ export const lineGraph = (dataSets: GraphDataSet[], renderer: Renderer, options?
     }
     
     // calculate upper/lower bounds of all data points
-    const maxValue = dataSetValues.reduce((max, values) => Math.max(max, ...values), -Infinity);
-    const minValue = dataSetValues.reduce((min, values) => Math.min(min, ...values), Infinity);
+    const maxValue = Math.max(upperBound, dataSetValues.reduce((max, values) => Math.max(max, ...values), -Infinity));
+    const minValue = Math.min(lowerBound, dataSetValues.reduce((min, values) => Math.min(min, ...values), Infinity));
     const range = maxValue - minValue;
 
     const calcY = (v: number) => {
