@@ -45,4 +45,8 @@ export class StatCollector<T> {
             }
         });
     }
+
+    last() {
+        return this.data[this.data.length - 1];
+    }
 }

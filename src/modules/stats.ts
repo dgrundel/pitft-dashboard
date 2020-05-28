@@ -92,3 +92,41 @@ export const networkSpeedStats = Object.keys(os.networkInterfaces())
             }));
         return map;
     }, {});
+
+/**
+ * Open files and processes
+ */
+export interface FilesAndProcesses {
+    openFiles: number;
+    totalProcesses: number;
+    zombieProcesses: number;
+}
+export const fileProcessStats = new StatCollector<FilesAndProcesses>(30, 20000, () => Promise.all([
+    osu.openfiles.openFd(),
+    osu.proc.totalProcesses(),
+    osu.proc.zombieProcesses()
+]).then(values => {
+    return Promise.resolve({
+        openFiles: osu.isNotSupported(values[0]) ? 0 : (values[0] as number),
+        totalProcesses: osu.isNotSupported(values[1]) ? 0 : (values[1] as number),
+        zombieProcesses: osu.isNotSupported(values[2]) ? 0 : (values[2] as number)
+    });
+}));
+
+
+// osu.drive.info('/')
+//     .then(info => Promise.resolve(
+//         osu.isNotSupported(info)
+//         ? undefined
+//         : {
+//             totalGb: parseFloat(info.totalGb as any),
+//             freeGb: parseFloat(info.freeGb as any),
+//             freePercentage: parseFloat(info.freePercentage as any),
+//             usedGb: parseFloat(info.usedGb as any),
+//             usedPercentage: parseFloat(info.usedPercentage as any)
+//         }
+//     )));
+
+// openfiles.openFd():Promise(number)
+// proc.totalProcesses():Promise(number)
+// proc.zombieProcesses():Promise(number)

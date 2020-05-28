@@ -9,7 +9,7 @@ import * as prettyMs from 'pretty-ms';
 
 import { setBacklight, toggleBacklight } from './modules/backlight';
 import { COLORS, hexToRgb } from './modules/colors';
-import { cpuStats, networkSpeedStats, driveStats, memoryStats } from './modules/stats';
+import { cpuStats, networkSpeedStats, driveStats, memoryStats, fileProcessStats } from './modules/stats';
 import { Renderer } from './modules/Renderer';
 import { GraphDataSet, lineGraph } from './modules/graph';
 
@@ -103,171 +103,169 @@ const getLineGeometry = (fontSize = defaultFontSize) => {
 };
 
 const updateDisplay = () => {
-    osu.drive.info('/').then(diskInfo => {
-        // vertical cursor
-        let y = 0;
+    // vertical cursor
+    let y = 0;
 
-        const addTextLine = (s: string, sizeOverride: number = undefined, textColor = COLORS.lightGray) => {
-            const { fontSize, lineHeight, padding } = getLineGeometry(sizeOverride);
+    const addTextLine = (s: string, sizeOverride: number = undefined, textColor = COLORS.lightGray) => {
+        const { fontSize, lineHeight, padding } = getLineGeometry(sizeOverride);
 
-            // place baseline of text with padding
-            const baseline = y + lineHeight - padding;
-            
-            renderer.color(...hexToRgb(textColor));
-            renderer.font(fontFamily, fontSize);
-            renderer.text(0, baseline, s, false, 0);
-            
-            // increment our y cursor
-            y += lineHeight;
-        };
+        // place baseline of text with padding
+        const baseline = y + lineHeight - padding;
+        
+        renderer.color(...hexToRgb(textColor));
+        renderer.font(fontFamily, fontSize);
+        renderer.text(0, baseline, s, false, 0);
+        
+        // increment our y cursor
+        y += lineHeight;
+    };
 
-        const addDivider = (lineStroke = 1, padding = getLineGeometry().padding, color = COLORS.darkGray) => {
-            const divderColor = hexToRgb(COLORS.darkGray);
-            
-            y += padding;
-            
-            renderer.color(...divderColor);
-            renderer.line(0, y, width, y, lineStroke);
+    const addDivider = (lineStroke = 1, padding = getLineGeometry().padding, color = COLORS.darkGray) => {
+        const divderColor = hexToRgb(COLORS.darkGray);
+        
+        y += padding;
+        
+        renderer.color(...divderColor);
+        renderer.line(0, y, width, y, lineStroke);
 
-            y += lineStroke + padding;
-        };
+        y += lineStroke + padding;
+    };
 
-        const addHorizontalGraph = (pct: number) => {
-            const { fontSize, lineHeight, padding } = getLineGeometry();
-            let barColor = COLORS.green;
-            if (pct > .8) {
-                barColor = COLORS.red;
-            } else if (pct > .6) {
-                barColor = COLORS.gold;
-            }
-
-            // draw a rectangle the full width of the screen and full line height
-            renderer.color(...hexToRgb(COLORS.lightGray));
-            renderer.rect(0, y, width, lineHeight);
-
-            // draw the bar at the height of the text and pad all four sides
-            renderer.color(...hexToRgb(barColor));
-            renderer.rect(padding, y + padding, Math.ceil(pct * (width - padding)), fontSize);
-
-            // increment our y cursor
-            y += lineHeight;
+    const addHorizontalGraph = (pct: number) => {
+        const { fontSize, lineHeight, padding } = getLineGeometry();
+        let barColor = COLORS.green;
+        if (pct > .8) {
+            barColor = COLORS.red;
+        } else if (pct > .6) {
+            barColor = COLORS.gold;
         }
 
-        // Clear the screen buffer
-        renderer.clear();
+        // draw a rectangle the full width of the screen and full line height
+        renderer.color(...hexToRgb(COLORS.lightGray));
+        renderer.rect(0, y, width, lineHeight);
 
-        // Draw the text non-centered, non-rotated, left (omitted arg)
-        addTextLine(getDateString(), 24, COLORS.blue);
-        addTextLine(`Uptime: ${getUptimeString()}`, 12, COLORS.darkGray);
-        
-        addTextLine(getIpAddresses().join(', '), 18, COLORS.green);
-        
-        addDivider(1, 10, COLORS.lightGray);
+        // draw the bar at the height of the text and pad all four sides
+        renderer.color(...hexToRgb(barColor));
+        renderer.rect(padding, y + padding, Math.ceil(pct * (width - padding)), fontSize);
 
-        // addTextLine(`Load: ${getLoadString()}`);
-        // // 1 minute load avg
-        // addHorizontalGraph(os.loadavg()[0]);
-        
-        // addTextLine(`Memory: ${getMemoryUsageString()}`);
-        // addHorizontalGraph(getMemoryUsagePercent());
+        // increment our y cursor
+        y += lineHeight;
+    }
 
-        // addTextLine(`Disk: ${getDiskUsageStr(diskInfo)}`);
-        // addHorizontalGraph(parseFloat(diskInfo.usedPercentage.toString()) / 100);
-        
-        const colSplit = Math.floor(width / 2);
-        const graphHeight = 70;
-        
-        const cpuGraphDataSets: GraphDataSet[] = [{
-            label: '1 min',
-            values: cpuStats.data.map(datum => datum.value[0])
-        },{
-            label: '5 min',
-            values: cpuStats.data.map(datum => datum.value[1])
-        },{
-            label: '15 min',
-            values: cpuStats.data.map(datum => datum.value[2])
-        }];
-        lineGraph(cpuGraphDataSets, renderer, {
-            offsetY: y,
-            height: graphHeight,
-            width: colSplit,
-            title: 'CPU Load',
-            horizontalSpacing: 2,
-            titleHeight: 12,
-            labelHeight: 10
-        });
+    // Clear the screen buffer
+    renderer.clear();
 
-        const networkSpeedDataSets = Object.keys(networkSpeedStats).reduce((graphData: GraphDataSet[], ifname) => {
-            const statData = networkSpeedStats[ifname].data;
-            if (statData.length > 0) {
-                graphData.push({
-                    label: `${ifname}: in`,
-                    values: statData.map(datum => datum.value.inputBytes)
-                });
-                graphData.push({
-                    label: `${ifname}: out`,
-                    values: statData.map(datum => datum.value.outputBytes)
-                });
-            }
-            return graphData;
-        }, []);
-            
-        lineGraph(networkSpeedDataSets, renderer, {
-            offsetY: y,
-            offsetX: colSplit + 1,
-            height: graphHeight,
-            width: colSplit,
-            title: 'Network Speeds',
-            horizontalSpacing: 2,
-            titleHeight: 12,
-            labelHeight: 10,
-            valueDisplayFormatter: n => prettyBytes(n)
-        });
+    // Draw the text non-centered, non-rotated, left (omitted arg)
+    addTextLine(getDateString(), 24, COLORS.blue);
+    addTextLine(`Uptime: ${getUptimeString()}`, 12, COLORS.darkGray);
 
-        // end of row, move cursor down
-        y += graphHeight;
+    addTextLine(getIpAddresses().join(', '), 18, COLORS.green);
 
-        const diskUsageDataSets = [{
-            label: 'Used Percentage',
-            values: driveStats.data.map(datum => datum.value.usedPercentage)
-        }]
-        lineGraph(diskUsageDataSets, renderer, {
-            offsetY: y,
-            height: graphHeight,
-            width: colSplit,
-            title: 'Disk Usage',
-            horizontalSpacing: 2,
-            titleHeight: 12,
-            labelHeight: 10,
-            lowerBound: 0,
-            upperBound: 100,
-            valueDisplayFormatter: n => `${n.toFixed(2)}%`
-        });
+    addDivider(1, 10, COLORS.lightGray);
 
-        const memoryUsageDataSets = [{
-            label: 'Used Percentage',
-            values: memoryStats.data.map(datum => datum.value.usedPercentage)
-        }]
-        lineGraph(memoryUsageDataSets, renderer, {
-            offsetY: y,
-            offsetX: colSplit + 1,
-            height: graphHeight,
-            width: colSplit,
-            title: 'Memory Usage',
-            horizontalSpacing: 2,
-            titleHeight: 12,
-            labelHeight: 10,
-            lowerBound: 0,
-            upperBound: 100,
-            valueDisplayFormatter: n => `${n.toFixed(2)}%`
-        });
-            
-        // Transfer the back buffer to the screen buffer
-        setTimeout(() => renderer.blit(), 20);
-        
-        // trigger another update
-        setTimeout(updateDisplay, REFRESH_INTERVAL);
+    const colSplit = Math.floor(width / 2);
+    const graphHeight = 65;
+
+    const cpuGraphDataSets: GraphDataSet[] = [{
+        label: '1 min',
+        values: cpuStats.data.map(datum => datum.value[0])
+    },{
+        label: '5 min',
+        values: cpuStats.data.map(datum => datum.value[1])
+    },{
+        label: '15 min',
+        values: cpuStats.data.map(datum => datum.value[2])
+    }];
+    lineGraph(cpuGraphDataSets, renderer, {
+        offsetY: y,
+        height: graphHeight,
+        width: colSplit,
+        title: 'CPU Load',
+        horizontalSpacing: 2,
+        titleHeight: 12,
+        labelHeight: 10
     });
+
+    const networkSpeedDataSets = Object.keys(networkSpeedStats).reduce((graphData: GraphDataSet[], ifname) => {
+        const statData = networkSpeedStats[ifname].data;
+        if (statData.length > 0) {
+            graphData.push({
+                label: `${ifname}: in`,
+                values: statData.map(datum => datum.value.inputBytes)
+            });
+            graphData.push({
+                label: `${ifname}: out`,
+                values: statData.map(datum => datum.value.outputBytes)
+            });
+        }
+        return graphData;
+    }, []);
+        
+    lineGraph(networkSpeedDataSets, renderer, {
+        offsetY: y,
+        offsetX: colSplit + 1,
+        height: graphHeight,
+        width: colSplit,
+        title: 'Network Speeds',
+        horizontalSpacing: 2,
+        titleHeight: 12,
+        labelHeight: 10,
+        valueDisplayFormatter: n => prettyBytes(n)
+    });
+
+    // end of row, move cursor down
+    y += graphHeight;
+
+    const fileProcessDataSets = [{
+        label: 'Open Files',
+        values: fileProcessStats.data.map(datum => datum.value.openFiles)
+    },{
+        label: 'Processes',
+        values: fileProcessStats.data.map(datum => datum.value.totalProcesses)
+    },{
+        label: 'Zombies',
+        values: fileProcessStats.data.map(datum => datum.value.zombieProcesses)
+    }]
+    lineGraph(fileProcessDataSets, renderer, {
+        offsetY: y,
+        height: graphHeight,
+        width: colSplit,
+        title: 'Files and Processes',
+        horizontalSpacing: 2,
+        titleHeight: 12,
+        labelHeight: 10,
+        valueDisplayFormatter: n => `${n}`
+    });
+
+    const memoryUsageDataSets = [{
+        label: 'Used Percentage',
+        values: memoryStats.data.map(datum => datum.value.usedPercentage)
+    }]
+    lineGraph(memoryUsageDataSets, renderer, {
+        offsetY: y,
+        offsetX: colSplit + 1,
+        height: graphHeight,
+        width: colSplit,
+        title: 'Memory Usage',
+        horizontalSpacing: 2,
+        titleHeight: 12,
+        labelHeight: 10,
+        lowerBound: 0,
+        upperBound: 100,
+        valueDisplayFormatter: n => `${n.toFixed(2)}%`
+    });
+        
+    y += graphHeight;
+
+    // addTextLine(`Disk: ${getDiskUsageStr(diskInfo)}`);
+    const driveInfo = driveStats.last();
+    addHorizontalGraph(driveInfo.value.usedPercentage / 100);
+
+    // Transfer the back buffer to the screen buffer
+    setTimeout(() => renderer.blit(), 20);
+
+    // trigger another update
+    setTimeout(updateDisplay, REFRESH_INTERVAL);
 };
 
 // turn the backlight on at startup
