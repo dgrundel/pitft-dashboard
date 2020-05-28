@@ -239,6 +239,7 @@ const updateDisplay = () => {
     // addTextLine(`Disk: ${getDiskUsageStr(diskInfo)}`);
     const driveInfo = driveStats.last();
     if (driveInfo) {
+        y += 4; // add some margin
         addHorizontalGraph(driveInfo.value.usedPercentage / 100);
     }
 
