@@ -9,7 +9,7 @@ import * as prettyMs from 'pretty-ms';
 
 import { setBacklight, toggleBacklight } from './modules/backlight';
 import { COLORS, hexToRgb } from './modules/colors';
-import { cpuStats, networkSpeedStats } from './modules/stats';
+import { cpuStats, networkSpeedStats, driveStats, memoryStats } from './modules/stats';
 import { Renderer } from './modules/Renderer';
 import { GraphDataSet, lineGraph } from './modules/graph';
 
@@ -177,18 +177,16 @@ const updateDisplay = () => {
         const colSplit = Math.floor(width / 2);
         const graphHeight = 70;
         
-        const cpuGraphDataSets: GraphDataSet[] = [
-            {
-                label: '1 min',
-                values: cpuStats.data.map(datum => datum.value[0])
-            },{
-                label: '5 min',
-                values: cpuStats.data.map(datum => datum.value[1])
-            },{
-                label: '15 min',
-                values: cpuStats.data.map(datum => datum.value[2])
-            }
-        ];
+        const cpuGraphDataSets: GraphDataSet[] = [{
+            label: '1 min',
+            values: cpuStats.data.map(datum => datum.value[0])
+        },{
+            label: '5 min',
+            values: cpuStats.data.map(datum => datum.value[1])
+        },{
+            label: '15 min',
+            values: cpuStats.data.map(datum => datum.value[2])
+        }];
         lineGraph(cpuGraphDataSets, renderer, {
             offsetY: y,
             height: graphHeight,
@@ -222,24 +220,45 @@ const updateDisplay = () => {
             labelHeight: 10
         });
 
+        // end of row, move cursor down
         y += graphHeight;
 
-        lineGraph(cpuGraphDataSets, renderer, {
+        const diskUsageDataSets = [{
+            label: 'Used Gb',
+            values: driveStats.data.map(datum => datum.value.usedGb)
+        }, {
+            label: 'Free Gb',
+            values: driveStats.data.map(datum => datum.value.freeGb)
+        }, {
+            label: 'Total Gb',
+            values: driveStats.data.map(datum => datum.value.totalGb)
+        }]
+        lineGraph(diskUsageDataSets, renderer, {
             offsetY: y,
             height: graphHeight,
             width: colSplit,
-            title: 'CPU Load',
+            title: 'Disk Usage',
             horizontalSpacing: 2,
             titleHeight: 12,
             labelHeight: 10
         });
 
-        lineGraph(cpuGraphDataSets, renderer, {
+        const memoryUsageDataSets = [{
+            label: 'Used Bytes',
+            values: memoryStats.data.map(datum => datum.value.usedBytes)
+        }, {
+            label: 'Free Bytes',
+            values: memoryStats.data.map(datum => datum.value.freeBytes)
+        }, {
+            label: 'Total Bytes',
+            values: memoryStats.data.map(datum => datum.value.totalBytes)
+        }]
+        lineGraph(memoryUsageDataSets, renderer, {
             offsetY: y,
             offsetX: colSplit + 1,
             height: graphHeight,
             width: colSplit,
-            title: 'CPU Load',
+            title: 'Memory Usage',
             horizontalSpacing: 2,
             titleHeight: 12,
             labelHeight: 10
