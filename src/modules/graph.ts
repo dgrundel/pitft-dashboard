@@ -57,8 +57,9 @@ export const lineGraph = (dataSets: GraphDataSet[], renderer: Renderer, options?
     const title = options.title;
     const titleHeight = title ? (options.titleHeight || DEFAULT_TITLE_HEIGHT) : 0;
     
-    const labels = dataSets.map(dataSet => dataSet.label).filter(label => !!label);
-    const labelHeight = labels.length !== 0 ? (options.labelHeight || DEFAULT_LABEL_HEIGHT) : 0;
+    const labels = dataSets.map(dataSet => dataSet.label);
+    const hasLabels = !!labels.find(s => !!s);
+    const labelHeight = hasLabels ? (options.labelHeight || DEFAULT_LABEL_HEIGHT) : 0;
     
     const graphHeight = height - labelHeight - titleHeight;
 
@@ -78,7 +79,7 @@ export const lineGraph = (dataSets: GraphDataSet[], renderer: Renderer, options?
     }
 
     // draw labels
-    if (labels.length > 0) {
+    if (hasLabels) {
         const labelXStep = Math.floor((width - (hSpacing * 2)) / labels.length);
         const swatchSize = Math.floor(0.8 * labelHeight);
         const swatchPadding = Math.floor((labelHeight - swatchSize) / 2);
@@ -87,6 +88,10 @@ export const lineGraph = (dataSets: GraphDataSet[], renderer: Renderer, options?
         let x = offsetX + hSpacing;
 
         labels.forEach((text, labelIndex) => {
+            if(!text) {
+                return;
+            }
+
             renderer.color(...getGraphColor(labelIndex));
             renderer.rect(x, swatchY, swatchSize, swatchSize);
 
