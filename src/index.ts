@@ -235,7 +235,9 @@ const updateDisplay = () => {
 
     // addTextLine(`Disk: ${getDiskUsageStr(diskInfo)}`);
     const driveInfo = driveStats.last();
-    addHorizontalGraph(driveInfo.value.usedPercentage / 100);
+    if (driveInfo) {
+        addHorizontalGraph(driveInfo.value.usedPercentage / 100);
+    }
 
     // Transfer the back buffer to the screen buffer
     setTimeout(() => renderer.blit(), 10);

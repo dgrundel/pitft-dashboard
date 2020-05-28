@@ -47,6 +47,7 @@ export class StatCollector<T> {
     }
 
     last() {
-        return this.data[this.data.length - 1];
+        const len = this.data.length;
+        return len > 0 ? this.data[len - 1] : undefined;
     }
 }
