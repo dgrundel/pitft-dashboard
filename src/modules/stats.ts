@@ -46,7 +46,7 @@ export interface DriveUsage {
     usedGb: number;
     usedPercentage: number;
 }
-export const driveStats = new StatCollector<DriveUsage>(10, 60000, () => osu.drive.info('/')
+export const driveStats = new StatCollector<DriveUsage>(5, 60000, () => osu.drive.info('/')
     .then(info => Promise.resolve(
         osu.isNotSupported(info)
         ? undefined

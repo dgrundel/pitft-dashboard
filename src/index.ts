@@ -67,30 +67,6 @@ const getDateString = () => {
 // uptime is in seconds, prettyMilliseconds uses millis
 const getUptimeString = () => prettyMs(os.uptime() * 1000);
 
-const getLoadString = () => os.loadavg()
-    .map(i => i.toFixed(2))
-    .join(', ');
-
-const getMemoryUsageString = () => {
-    const free = os.freemem(); // bytes
-    const total = os.totalmem(); // bytes
-    const used = total - free; // bytes
-
-    return `${prettyBytes(used)} / ${prettyBytes(total)}`;
-};
-
-const getMemoryUsagePercent = () => {
-    const free = os.freemem(); // bytes
-    const total = os.totalmem(); // bytes
-    const used = total - free; // bytes
-
-    return used/total;
-};
-
-const getDiskUsageStr = (info: osu.DriveInfo) => osu.isNotSupported(info)
-    ? 'Unsupported'
-    : `${info.freeGb}GB Free, ${info.usedPercentage}% Used`;
-
 const getLineGeometry = (fontSize = defaultFontSize) => {
     const lineHeight = Math.max(fontSize, defaultLineHeight);
     const padding = (lineHeight - fontSize) / 2;
@@ -262,7 +238,7 @@ const updateDisplay = () => {
     addHorizontalGraph(driveInfo.value.usedPercentage / 100);
 
     // Transfer the back buffer to the screen buffer
-    setTimeout(() => renderer.blit(), 20);
+    setTimeout(() => renderer.blit(), 10);
 
     // trigger another update
     setTimeout(updateDisplay, REFRESH_INTERVAL);
