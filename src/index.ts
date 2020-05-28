@@ -108,7 +108,10 @@ const updateDisplay = () => {
     };
 
     const addHorizontalGraph = (pct: number) => {
-        const { fontSize, lineHeight, padding } = getLineGeometry();
+        const totalHeight = 12;
+        const barHeight = 8;
+        const padding = Math.floor((totalHeight - barHeight) / 2);
+
         let barColor = COLORS.green;
         if (pct > .8) {
             barColor = COLORS.red;
@@ -117,15 +120,15 @@ const updateDisplay = () => {
         }
 
         // draw a rectangle the full width of the screen and full line height
-        renderer.color(...hexToRgb(COLORS.lightGray));
-        renderer.rect(0, y, width, lineHeight);
+        renderer.color(...hexToRgb(COLORS.darkDarkGray));
+        renderer.rect(0, y, width, totalHeight);
 
         // draw the bar at the height of the text and pad all four sides
         renderer.color(...hexToRgb(barColor));
-        renderer.rect(padding, y + padding, Math.ceil(pct * (width - padding)), fontSize);
+        renderer.rect(padding, y + padding, Math.ceil(pct * (width - padding)), barHeight);
 
         // increment our y cursor
-        y += lineHeight;
+        y += totalHeight;
     }
 
     // Clear the screen buffer
